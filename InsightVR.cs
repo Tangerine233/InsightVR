@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -29,6 +30,10 @@ public class InsightVR : MonoBehaviour
     public Material cameraImageMat;
     private Texture2D cameraImageTex2D;
 
+    public int startTime;
+
+    public int timeStamp;
+
 
     public void Start()
     {
@@ -37,6 +42,7 @@ public class InsightVR : MonoBehaviour
         {
             cameraImageMat.mainTexture = cameraImageTex2D;
         }
+        startTime = DateTime.Now.Millisecond;
     }
 
     public void OnDestroy()
@@ -46,14 +52,16 @@ public class InsightVR : MonoBehaviour
 
     public void writeHR(uint rate)
     {
-        /*
-        using (var writer = new StreamWriter("TestFile.csv"))
-        {
-            writer.WriteLine(rate+"\n");
-            writer.WriteLine("aaaaa");
-        }
-        */
-        File.AppendAllText("TestFile.csv", rate.ToString() + "\n");
+        //call function in HPOmnicept class to return current heart rate, then input into CSV alongside time stamp
+        //function call, get value of heartRate.rate
+        
+        //gets current time for time stamp, need to subtract start time for runtime value
+        timeStamp = DateTime.UtcNow.Millisecond;
+
+        //add time stamp and heart rate to csv
+        var line = String.Format("Time", "Heart Rate");
+        var line2 = String.Format(heartRate, timeStamp);
+        //File.AppendAllText("TestFile.csv", rate.ToString() + "\n");
     }
 
 
@@ -82,10 +90,16 @@ public class InsightVR : MonoBehaviour
 
     public void EyeTrackingHandler(EyeTracking eyeTracking)
     {
-        if (showEyeTrackingMessages && eyeTracking != null)
-        {
-            Debug.Log(eyeTracking);
-        }
+        //call function in HPOmnicept class to return current eye tracking value, then input into CSV alongside time stamp
+        //function call, get value of eye tracking
+        
+        //gets current time for time stamp, need to subtract start time for runtime value
+        timeStamp = DateTime.UtcNow.Millisecond;
+
+        //add time stamp and heart rate to csv
+        var line = String.Format("Time", "Heart Rate");
+        var line2 = String.Format(heartRate, timeStamp);
+        File.AppendAllText("TestFile.csv", rate.ToString() + "\n");
     }
 
     public void VSyncHandler(VSync vsync)
