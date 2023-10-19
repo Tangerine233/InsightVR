@@ -32,7 +32,9 @@ public class InsightVR : MonoBehaviour
 
     public int startTime;
 
-    public int timeStamp;
+    public int timeStamp, currentTime;
+
+    string fileNameHR, fileNameEye, fileNameIMU, fileNameFace;
 
 
     public void Start()
@@ -43,6 +45,16 @@ public class InsightVR : MonoBehaviour
             cameraImageMat.mainTexture = cameraImageTex2D;
         }
         startTime = DateTime.Now.Millisecond;
+        fileNameHR = "HR_" + DateTime.Now.ToString("_yyyy_MMdd_HH_mm_ss") + ".csv";
+        fileNameEye = "Eye_" + DateTime.Now.ToString("_yyyy_MMdd_HH_mm_ss") + ".csv";
+        fileNameIMU = "IMU_" + DateTime.Now.ToString("_yyyy_MMdd_HH_mm_ss") + ".csv";
+        fileNameFace = "Face_" + DateTime.Now.ToString("_yyyy_MMdd_HH_mm_ss") + ".csv";
+        var header = String.Format("Time", "Heart Rate");
+        File.WriteAllText(fileNameHR, header);
+        header = String.Format("Time", "Combined Gaze", "Pupil Position Left", "Pupil Position Right", "Pupil Dilation", "Openness");
+        File.WriteAllText(fileNameEye, header);
+        File.WriteAllText(fileNameIMU, "");
+        File.WriteAllText(fileNameFace, "");
     }
 
     public void OnDestroy()
@@ -56,12 +68,16 @@ public class InsightVR : MonoBehaviour
         //function call, get value of heartRate.rate
         
         //gets current time for time stamp, need to subtract start time for runtime value
-        timeStamp = DateTime.UtcNow.Millisecond;
+        currentTime = DateTime.UtcNow.Millisecond;
 
+        timeStamp = startTime - currentTime;
         //add time stamp and heart rate to csv
-        var line = String.Format("Time", "Heart Rate");
-        var line2 = String.Format(heartRate, timeStamp);
-        //File.AppendAllText("TestFile.csv", rate.ToString() + "\n");
+        
+        var data = String.Format(timeStamp, HeartRateHandler.rate);
+
+        File.AppendAllText(fileNameHR, header + "\n");
+        File.AppendAllText(fileNameHR, data + "\n");
+
     }
 
 
@@ -71,9 +87,6 @@ public class InsightVR : MonoBehaviour
         {
             Debug.Log(hr);
             writeHR(hr.Rate);
-            //File.AppendAllText("TestFile.csv", hr.GetHashCode().ToString());
-
-
         }
     }
 
@@ -94,12 +107,15 @@ public class InsightVR : MonoBehaviour
         //function call, get value of eye tracking
         
         //gets current time for time stamp, need to subtract start time for runtime value
-        timeStamp = DateTime.UtcNow.Millisecond;
+        currentTime = DateTime.UtcNow.Millisecond;
 
+        timeStamp = startTime - currentTime;
         //add time stamp and heart rate to csv
-        var line = String.Format("Time", "Heart Rate");
-        var line2 = String.Format(heartRate, timeStamp);
-        File.AppendAllText("TestFile.csv", rate.ToString() + "\n");
+        var line = 
+        var line2 = String.Format(timeStamp, );
+
+        //File.AppendAllText("Eye_Data.csv", line + "\n");
+        //File.AppendAllText("Eye_Data.csv", line2 + "\n");
     }
 
     public void VSyncHandler(VSync vsync)
