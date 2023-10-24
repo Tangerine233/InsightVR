@@ -52,9 +52,14 @@ public class InsightVR : MonoBehaviour
         var header = String.Format("Time", "Heart Rate");
         File.WriteAllText(fileNameHR, header);
         header = String.Format("Time", "Combined Gaze", "Pupil Position Left", "Pupil Position Right", "Pupil Dilation", "Openness");
+        
         File.WriteAllText(fileNameEye, header);
-        File.WriteAllText(fileNameIMU, "");
-        File.WriteAllText(fileNameFace, "");
+        header = ;
+
+        File.WriteAllText(fileNameIMU, header);
+        header = ;
+        
+        File.WriteAllText(fileNameFace, header);
     }
 
     public void OnDestroy()
