@@ -36,6 +36,15 @@ public class InsightVR : MonoBehaviour
 
     string fileNameHR, fileNameEye, fileNameIMU, fileNameFace;
 
+    enum nameOfHeadset {
+        HP_Omnicept_Reverb G2,
+        Oculus_Rift,
+        Oculus_Rift_S,
+        HTC_Vive,
+        Oculus_Quest
+        //can add more headsets down the line
+    }
+
 
     public void Start()
     {
@@ -61,6 +70,8 @@ public class InsightVR : MonoBehaviour
         
         header = String.Format("Time", "Face Tracking Data");
         File.WriteAllText(fileNameFace, header);
+
+        nameOfHeadset thisHeadset = nameOfHeadset.HP_Omnicept_Reverb;
     }
 
     public void OnDestroy()
@@ -78,7 +89,7 @@ public class InsightVR : MonoBehaviour
         timeStamp = startTime - currentTime;
 
         //add time stamp and heart rate to csv
-        var data = String.Format(timeStamp, /*HEART RATE*/);
+        var data = String.Format(timeStamp, rate);
         File.AppendAllText(fileNameHR, data + "\n");
 
     }
@@ -103,7 +114,6 @@ public class InsightVR : MonoBehaviour
         }
     }
 
-
     public void EyeTrackingHandler(EyeTracking eyeTracking)
     {
         //call function in HPOmnicept class to return current eye tracking value, then input into CSV alongside time stamp
@@ -113,8 +123,10 @@ public class InsightVR : MonoBehaviour
         currentTime = DateTime.UtcNow.Millisecond;
         timeStamp = startTime - currentTime;
 
+
+        //"Combined Gaze", "Pupil Position Left", "Pupil Position Right", "Pupil Dilation", "Openness"
         //add time stamp and heart rate to csv
-        var data = String.Format(timeStamp, /*EYE TRACKING DATA*/);
+        var data = String.Format(timeStamp, eyeTracking);
         File.AppendAllText(fileNameEye, data + "\n");
     }
 
@@ -157,7 +169,7 @@ public class InsightVR : MonoBehaviour
         currentTime = DateTime.UtcNow.Millisecond;
         timeStamp = startTime - currentTime;
 
-        var data = String.Format(timeStamp, /*IMU DATA*/);
+        var data = String.Format(timeStamp, imu);
         File.AppendAllText(fileNameIMU, data + "\n");
     }
 
