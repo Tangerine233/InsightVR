@@ -30,18 +30,14 @@ public class InsightVR : MonoBehaviour
     public Material cameraImageMat;
     private Texture2D cameraImageTex2D;
 
-    public int startTime;
-
-    public int timeStamp, currentTime;
+    public int startTime, timeStamp, currentTime;
 
     string fileNameHR, fileNameEye, fileNameIMU, fileNameFace;
 
     enum nameOfHeadset {
-        HP_Omnicept_Reverb G2,
-        Oculus_Rift,
-        Oculus_Rift_S,
-        HTC_Vive,
-        Oculus_Quest
+        HP_Omnicept_Reverb_G2,
+        Meta_Quest_Pro,
+        HTC_Vive
         //can add more headsets down the line
     }
 
@@ -71,7 +67,7 @@ public class InsightVR : MonoBehaviour
         header = String.Format("Time", "Face Tracking Data");
         File.WriteAllText(fileNameFace, header);
 
-        nameOfHeadset thisHeadset = nameOfHeadset.HP_Omnicept_Reverb;
+        //nameOfHeadset thisHeadset = nameOfHeadset.HP_Omnicept_Reverb_G2;
     }
 
     public void OnDestroy()
@@ -79,11 +75,21 @@ public class InsightVR : MonoBehaviour
         Destroy(cameraImageTex2D);
     }
 
-    public void writeHR(uint rate)
+    public void HeartRateHandler(HeartRate hr)
     {
-        //call function in HPOmnicept class to return current heart rate, then input into CSV alongside time stamp
-        //function call, get value of heartRate.rate
+        if (showHeartRateMessages && hr != null)
+        {
+            //Debug.Log(hr);
+            writeHR(hr.Rate);
+        }
+    }
+
+    public void writeHR(String rate, String[] timeStamp)
+    {
+        var data = $"{timestamp[0]},{rate}";
+        File.AppendAllText(fileNameHR, data + "\n");
         
+        /*
         //gets current time for time stamp, need to subtract start time for runtime value
         currentTime = DateTime.UtcNow.Millisecond;
         timeStamp = startTime - currentTime;
@@ -91,19 +97,8 @@ public class InsightVR : MonoBehaviour
         //add time stamp and heart rate to csv
         var data = String.Format(timeStamp, rate);
         File.AppendAllText(fileNameHR, data + "\n");
-
+        */
     }
-
-
-    public void HeartRateHandler(HeartRate hr)
-    {
-        if (showHeartRateMessages && hr != null)
-        {
-            Debug.Log(hr);
-            writeHR(hr.Rate);
-        }
-    }
-
 
 
     public void PPGFrameHandler(PPGFrame ppg)
@@ -116,17 +111,71 @@ public class InsightVR : MonoBehaviour
 
     public void EyeTrackingHandler(EyeTracking eyeTracking)
     {
-        //call function in HPOmnicept class to return current eye tracking value, then input into CSV alongside time stamp
-        //function call, get value of eye tracking
-        
+        if (showEyeTrackingMessages && eyeTracking != null)
+        {
+            //Debug.Log(eyeTracking);
+            writeEyeData(eyeTracking);
+        }   
+    }
+
+    public void writeEyeData(String[] leftEye, String[] rightEye, String[] combinedEyes, String[] timestamp) {
+        /*
         //gets current time for time stamp, need to subtract start time for runtime value
         currentTime = DateTime.UtcNow.Millisecond;
         timeStamp = startTime - currentTime;
 
+        Vector3 combinedCurrent;
+        Vector2 leftPupPos, rightPupPos;
+        float leftPupDil, rightPupDil, leftOpen, rightOpen;
 
         //"Combined Gaze", "Pupil Position Left", "Pupil Position Right", "Pupil Dilation", "Openness"
-        //add time stamp and heart rate to csv
-        var data = String.Format(timeStamp, eyeTracking);
+        if(eyeTracking.combinedGazeConfidence >= .4f) {
+            combinedCurrent = new Vector3(eyeTracking.combinedGaze.x, eyeTracking.combinedGaze.y, eyeTracking.combinedGaze.z);
+        } else {
+            combinedCurrent = null;
+        }
+
+        if(eyeTracking.leftPupilDilationConfidence >= .4f) {
+            leftPupDil = eyeTracking.leftPupilDilation;
+        } else {
+            leftPupDil = null;
+        }
+
+        if(eyeTracking.rightPupilDilationConfidence >= .4f) {
+            rightPupDil = eyeTracking.rightPupilDilation;
+        } else {
+            rightPupDil = null;
+        }
+
+        if(eyeTracking.leftPupilPositionConfidence >= .4f) {
+            leftPupPos = new Vector2(eyeTracking.leftPupilPosition.x, eyeTracking.leftPupilPosition.y);
+        } else {
+            leftPupPos = null;
+        }
+
+        if(eyeTracking.rightPupilPositionConfidence >= .4f) {
+            rightPupPos = new Vector2(eyeTracking.rightPupilPosition.x, eyeTracking.rightPupilPosition.y);
+        } else {
+            rightPupPos = null;
+        }
+
+        if(eyeTracking.leftEyeOpennessConfidence >= .4f) {
+            leftOpen = eyeTracking.leftEyeOpenness;
+        } else {
+            leftOpen = null;
+        }
+
+        if(eyeTracking.rightEyeOpennessConfidence >= .4f) {
+            rightOpen = eyeTracking.rightEyeOpenness;
+        } else {
+            rightOpen = null;
+        }
+
+        //add time stamp and eye data to csv
+        var data = String.Format(timeStamp, combinedCurrent.ToString(), leftPupDil, rightPupDil, leftPupPos, rightPupPos, leftOpen, rightOpen);
+        File.AppendAllText(fileNameEye, data + "\n");
+        */
+        var data = $"{timestamp[0]},{rate}";
         File.AppendAllText(fileNameEye, data + "\n");
     }
 
@@ -156,8 +205,8 @@ public class InsightVR : MonoBehaviour
         currentTime = DateTime.UtcNow.Millisecond;
         timeStamp = startTime - currentTime;
 
-        var data = String.Format(timeStamp, /*FACE TRACKING DATA*/);
-        File.AppendAllText(fileNameFace, data + "\n");
+        //var data = String.Format(timeStamp, cameraImage);
+        //File.AppendAllText(fileNameFace, data + "\n");
     }
 
     public void IMUFrameHandler(IMUFrame imu)
@@ -169,8 +218,8 @@ public class InsightVR : MonoBehaviour
         currentTime = DateTime.UtcNow.Millisecond;
         timeStamp = startTime - currentTime;
 
-        var data = String.Format(timeStamp, imu);
-        File.AppendAllText(fileNameIMU, data + "\n");
+        //var data = String.Format(timeStamp, imu);
+        //File.AppendAllText(fileNameIMU, data + "\n");
     }
 
     public void DisconnectHandler(string msg)

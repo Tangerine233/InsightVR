@@ -31,7 +31,7 @@ public class HPOmnicept : MonoBehaviour
                                     {MessageTypes.ABI_MESSAGE_HEART_RATE_FRAME }, // HR
                                     {MessageTypes.ABI_MESSAGE_EYE_TRACKING}, // Eye Tracking
                                     {MessageTypes.ABI_MESSAGE_CAMERA_IMAGE}, // Camera Image
-                                    { MessageTypes.ABI_MESSAGE_IMU_FRAME}, //IMU
+                                    {MessageTypes.ABI_MESSAGE_IMU_FRAME}, //IMU
                                 };
     public Material cameraImageMat;
     private Texture2D cameraImageTex2D;
