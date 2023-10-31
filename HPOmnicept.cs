@@ -136,12 +136,15 @@ public class HPOmnicept : MonoBehaviour
 
                 // populate string para
                 var rate = heartRate.Rate.ToString();
+
+
+                // timeStamps
                 var timeStampSystem = heartRate.Timestamp.SystemTimeMicroSeconds;
                 var timeStampOmnicept = heartRate.Timestamp.OmniceptTimeMicroSeconds;
                 var timeStampHardware = heartRate.Timestamp.HardwareTimeMicroSeconds;
 
                 // test log
-                Debug.Log(rate + "time: " + timeStampSystem.ToString());
+                Debug.Log("HR: "+rate);
 
                 // test write file
                 File.AppendAllText(fileName, DateTime.Now.ToString() + "," + heartRate.Rate.ToString() + "\n");
@@ -152,14 +155,14 @@ public class HPOmnicept : MonoBehaviour
                 var eyeTracking = m_gliaClient.Connection.Build<EyeTracking>(msg);
 
                 // test log eye tracking
-                Debug.Log(eyeTracking);
+                // Debug.Log(eyeTracking);
 
                 // populate string para
                 // left eye
-                var leftGlazeX = eyeTracking.LeftEye.Gaze.X.ToString();
-                var leftGlazeY = eyeTracking.LeftEye.Gaze.Y.ToString();
-                var leftGlazeZ = eyeTracking.LeftEye.Gaze.Z.ToString();
-                var leftGlazeConfidence = eyeTracking.LeftEye.Gaze.Confidence.ToString();
+                var leftGazeX = eyeTracking.LeftEye.Gaze.X.ToString();
+                var leftGazeY = eyeTracking.LeftEye.Gaze.Y.ToString();
+                var leftGazeZ = eyeTracking.LeftEye.Gaze.Z.ToString();
+                var leftGazeConfidence = eyeTracking.LeftEye.Gaze.Confidence.ToString();
                 var leftPilposition = "";
                 try { leftPilposition = eyeTracking.LeftEye.PupilPosition.ToString(); } catch {}
                 var leftOpenness = eyeTracking.LeftEye.Openness.ToString();
@@ -168,17 +171,22 @@ public class HPOmnicept : MonoBehaviour
                 var leftPupilDilationConfidence = eyeTracking.LeftEye.PupilDilationConfidence.ToString();
 
                 //right eye
-                var rightGlazeX = eyeTracking.RightEye.Gaze.X.ToString();
-                var rightGlazeY = eyeTracking.RightEye.Gaze.Y.ToString();
-                var rightGlazeZ = eyeTracking.RightEye.Gaze.Z.ToString();
-                var rightGlazeConfidence = eyeTracking.RightEye.Gaze.Confidence.ToString();
+                var rightGazeX = eyeTracking.RightEye.Gaze.X.ToString();
+                var rightGazeY = eyeTracking.RightEye.Gaze.Y.ToString();
+                var rightGazeZ = eyeTracking.RightEye.Gaze.Z.ToString();
+                var rightGazeConfidence = eyeTracking.RightEye.Gaze.Confidence.ToString();
                 var rightPilposition = "";
                 try { rightPilposition = eyeTracking.RightEye.PupilPosition.ToString(); } catch {}
                 var rightOpenness = eyeTracking.RightEye.Openness.ToString();
                 var rightOpennessConfidence = eyeTracking.RightEye.OpennessConfidence.ToString();
                 var rightPupilDilation = eyeTracking.RightEye.PupilDilation.ToString();
                 var rightPupilDilationConfidence = eyeTracking.RightEye.PupilDilationConfidence.ToString();
-                
+
+                // combine
+                var combinGazeX = eyeTracking.CombinedGaze.X.ToString();
+
+
+                Debug.Log("LeftEyeGaze: X-"+leftGazeX+" Y-"+leftGazeY+" Z-"+leftGazeZ);
 
                 break;
 
@@ -190,13 +198,28 @@ public class HPOmnicept : MonoBehaviour
                 cameraImageTex2D.LoadRawTextureData(cameraImage.ImageData);
                 cameraImageTex2D.Apply();
 
+                var frameNumber = cameraImage.FrameNumber;
+                var fPS = cameraImage.FrameNumber;
+                Debug.Log("FaceImage: frameNumber-" + frameNumber + " fPS-" + fPS);
+
+
+
+                // test file write
+                byte[] faceImage = cameraImageTex2D.EncodeToPNG();
+                File.WriteAllBytes("/FaceImages/Image_"+ frameNumber.ToString() +"_"+DateTime.Now.ToString("_yyyyMMdd_HH_mm_ss")+".png", faceImage);
+
                 break;
 
 
             case MessageTypes.ABI_MESSAGE_IMU_FRAME:
                 var imuFrame = m_gliaClient.Connection.Build<IMUFrame>(msg);
 
-                var IMUinfo = imuFrame.Data;
+                var acc = imuFrame.Data[0].ToString();
+                var gyro = imuFrame.Data[1].ToString();
+
+
+                // test log
+                Debug.Log("IMU: acc-"+acc+" gyro-"+gyro);
 
 
                 break;
