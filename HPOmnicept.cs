@@ -9,11 +9,12 @@ using System.IO;
 using HP.Omnicept;
 using HP.Omnicept.Messaging;
 using HP.Omnicept.Messaging.Messages;
+using HP.Omnicept.Unity;
+// using HP.Omnicept.Unity;
 
 public class HPOmnicept : MonoBehaviour
 {
     private String fileName;
-
 
     // omnicept client object
     private Glia m_gliaClient;
@@ -74,7 +75,7 @@ public class HPOmnicept : MonoBehaviour
         catch (Exception e)
         {
             m_isConnected = false;
-            Debug.Log("[InsightVR_Omnicept] Failed to load Glia for reason :"+ e);
+            Debug.Log("[InsightVR_Omnicept] Failed to load Glia for reason :" + e);
         }
         return m_isConnected;
     }
@@ -84,6 +85,9 @@ public class HPOmnicept : MonoBehaviour
         StartGlia();
         fileName = "HR_" + DateTime.Now.ToString("_yyyyMMdd_HH_mm_ss") + ".csv";
         File.WriteAllText(fileName, "");
+
+        cameraImageTex2D = new Texture2D(400, 400, TextureFormat.R8, false);
+
     }
 
 
@@ -118,24 +122,106 @@ public class HPOmnicept : MonoBehaviour
         return msg;
     }
 
+    void timeStampHandler(Timestamp ts)
+    {
 
+    }
 
     void HandleMessage(ITransportMessage msg)
     {
         switch (msg.Header.MessageType)
         {
-            //---------------
             case MessageTypes.ABI_MESSAGE_HEART_RATE:
-                Debug.Log("_HEART_RATE_HEART_RATE_HEART_RATE_HEART_RATE");
                 var heartRate = m_gliaClient.Connection.Build<HeartRate>(msg);
-                Debug.Log(heartRate.Rate.ToString());
-                File.AppendAllText(fileName, DateTime.Now.ToString() + ","+heartRate.Rate.ToString() + "\n");
+
+                // populate string para
+                var rate = heartRate.Rate.ToString();
+
+
+                // timeStamps
+                var timeStampSystem = heartRate.Timestamp.SystemTimeMicroSeconds;
+                var timeStampOmnicept = heartRate.Timestamp.OmniceptTimeMicroSeconds;
+                var timeStampHardware = heartRate.Timestamp.HardwareTimeMicroSeconds;
+
+                // test log
+                Debug.Log("HR: "+rate);
+
+                // test write file
+                File.AppendAllText(fileName, DateTime.Now.ToString() + "," + heartRate.Rate.ToString() + "\n");
                 break;
+
+
             case MessageTypes.ABI_MESSAGE_EYE_TRACKING:
-                
                 var eyeTracking = m_gliaClient.Connection.Build<EyeTracking>(msg);
-                Debug.Log(eyeTracking);
-         
+
+                // test log eye tracking
+                // Debug.Log(eyeTracking);
+
+                // populate string para
+                // left eye
+                var leftGazeX = eyeTracking.LeftEye.Gaze.X.ToString();
+                var leftGazeY = eyeTracking.LeftEye.Gaze.Y.ToString();
+                var leftGazeZ = eyeTracking.LeftEye.Gaze.Z.ToString();
+                var leftGazeConfidence = eyeTracking.LeftEye.Gaze.Confidence.ToString();
+                var leftPilposition = "";
+                try { leftPilposition = eyeTracking.LeftEye.PupilPosition.ToString(); } catch {}
+                var leftOpenness = eyeTracking.LeftEye.Openness.ToString();
+                var leftOpennessConfidence = eyeTracking.LeftEye.OpennessConfidence.ToString();
+                var leftPupilDilation = eyeTracking.LeftEye.PupilDilation.ToString();
+                var leftPupilDilationConfidence = eyeTracking.LeftEye.PupilDilationConfidence.ToString();
+
+                //right eye
+                var rightGazeX = eyeTracking.RightEye.Gaze.X.ToString();
+                var rightGazeY = eyeTracking.RightEye.Gaze.Y.ToString();
+                var rightGazeZ = eyeTracking.RightEye.Gaze.Z.ToString();
+                var rightGazeConfidence = eyeTracking.RightEye.Gaze.Confidence.ToString();
+                var rightPilposition = "";
+                try { rightPilposition = eyeTracking.RightEye.PupilPosition.ToString(); } catch {}
+                var rightOpenness = eyeTracking.RightEye.Openness.ToString();
+                var rightOpennessConfidence = eyeTracking.RightEye.OpennessConfidence.ToString();
+                var rightPupilDilation = eyeTracking.RightEye.PupilDilation.ToString();
+                var rightPupilDilationConfidence = eyeTracking.RightEye.PupilDilationConfidence.ToString();
+
+                // combine
+                var combinGazeX = eyeTracking.CombinedGaze.X.ToString();
+
+
+                Debug.Log("LeftEyeGaze: X-"+leftGazeX+" Y-"+leftGazeY+" Z-"+leftGazeZ);
+
+                break;
+
+
+            case MessageTypes.ABI_MESSAGE_CAMERA_IMAGE:
+                var cameraImage = m_gliaClient.Connection.Build<CameraImage>(msg);
+
+                // Load data into the texture and upload it to the GPU.
+                cameraImageTex2D.LoadRawTextureData(cameraImage.ImageData);
+                cameraImageTex2D.Apply();
+
+                var frameNumber = cameraImage.FrameNumber;
+                var fPS = cameraImage.FrameNumber;
+                Debug.Log("FaceImage: frameNumber-" + frameNumber + " fPS-" + fPS);
+
+
+
+                // test file write
+                byte[] faceImage = cameraImageTex2D.EncodeToPNG();
+                File.WriteAllBytes("/FaceImages/Image_"+ frameNumber.ToString() +"_"+DateTime.Now.ToString("_yyyyMMdd_HH_mm_ss")+".png", faceImage);
+
+                break;
+
+
+            case MessageTypes.ABI_MESSAGE_IMU_FRAME:
+                var imuFrame = m_gliaClient.Connection.Build<IMUFrame>(msg);
+
+                var acc = imuFrame.Data[0].ToString();
+                var gyro = imuFrame.Data[1].ToString();
+
+
+                // test log
+                Debug.Log("IMU: acc-"+acc+" gyro-"+gyro);
+
+
                 break;
             /*
             case MessageTypes.ABI_MESSAGE_HEART_RATE_FRAME:
@@ -241,7 +327,7 @@ public class HPOmnicept : MonoBehaviour
             default:
                 break;
         }
-       
+
     }
 
 }
