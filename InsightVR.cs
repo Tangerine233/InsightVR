@@ -26,6 +26,9 @@ public class InsightVR : MonoBehaviour
     private bool showIMUMessages = true;
     [SerializeField]
     private bool showSubscriptionResultListMessages = true;
+    
+    [SerializeField] 
+    Headset thisHeadset = new Headset();
 
     public Material cameraImageMat;
     private Texture2D cameraImageTex2D;
@@ -34,7 +37,7 @@ public class InsightVR : MonoBehaviour
 
     string fileNameHR, fileNameEye, fileNameIMU, fileNameFace;
 
-    enum nameOfHeadset {
+    enum Headset {
         HP_Omnicept_Reverb_G2,
         Meta_Quest_Pro,
         HTC_Vive
@@ -67,7 +70,7 @@ public class InsightVR : MonoBehaviour
         header = String.Format("Time", "Face Tracking Data");
         File.WriteAllText(fileNameFace, header);
 
-        //nameOfHeadset thisHeadset = nameOfHeadset.HP_Omnicept_Reverb_G2;
+        thisHeadset = Headset.HP_Omnicept_Reverb_G2;
     }
 
     public void OnDestroy()
@@ -79,14 +82,13 @@ public class InsightVR : MonoBehaviour
     {
         if (showHeartRateMessages && hr != null)
         {
-            //Debug.Log(hr);
-            writeHR(hr.Rate);
+            Debug.Log(hr);
         }
     }
 
     public void writeHR(String rate, String[] timeStamp)
     {
-        var data = $"{timestamp[0]},{rate}";
+        var data = $"{"Hello"},{"Hi"}";
         File.AppendAllText(fileNameHR, data + "\n");
         
         /*
@@ -113,8 +115,7 @@ public class InsightVR : MonoBehaviour
     {
         if (showEyeTrackingMessages && eyeTracking != null)
         {
-            //Debug.Log(eyeTracking);
-            writeEyeData(eyeTracking);
+            Debug.Log(eyeTracking);
         }   
     }
 
@@ -175,7 +176,7 @@ public class InsightVR : MonoBehaviour
         var data = String.Format(timeStamp, combinedCurrent.ToString(), leftPupDil, rightPupDil, leftPupPos, rightPupPos, leftOpen, rightOpen);
         File.AppendAllText(fileNameEye, data + "\n");
         */
-        var data = $"{timestamp[0]},{rate}";
+        var data = $"{"Hello"},{"Test"}";
         File.AppendAllText(fileNameEye, data + "\n");
     }
 
@@ -202,8 +203,8 @@ public class InsightVR : MonoBehaviour
                 cameraImageTex2D.Apply();
             }
         }
-        currentTime = DateTime.UtcNow.Millisecond;
-        timeStamp = startTime - currentTime;
+        //currentTime = DateTime.UtcNow.Millisecond;
+        //timeStamp = startTime - currentTime;
 
         //var data = String.Format(timeStamp, cameraImage);
         //File.AppendAllText(fileNameFace, data + "\n");
@@ -215,8 +216,8 @@ public class InsightVR : MonoBehaviour
         {
             Debug.Log(imu);
         }
-        currentTime = DateTime.UtcNow.Millisecond;
-        timeStamp = startTime - currentTime;
+        //currentTime = DateTime.UtcNow.Millisecond;
+        //timeStamp = startTime - currentTime;
 
         //var data = String.Format(timeStamp, imu);
         //File.AppendAllText(fileNameIMU, data + "\n");
