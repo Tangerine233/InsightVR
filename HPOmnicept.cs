@@ -268,7 +268,7 @@ public class HPOmnicept : MonoBehaviour
 
 
                 // write file
-                File.AppendAllText(fileNameHR, DateTime.Now.ToString() + "," 
+                File.AppendAllText(fileNameEye, DateTime.Now.ToString() + "," 
                     + leftGazeX + ","  
                     + leftGazeY + ","
                     + leftGazeZ + ","
