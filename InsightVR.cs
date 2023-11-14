@@ -29,6 +29,10 @@ public class InsightVR : MonoBehaviour
     
     [SerializeField] 
     Headset thisHeadset = new Headset();
+    public int deviceNum;
+
+    [SerializeField]
+    public bool[] captures;
 
     public Material cameraImageMat;
     private Texture2D cameraImageTex2D;
@@ -36,6 +40,10 @@ public class InsightVR : MonoBehaviour
     public int startTime, timeStamp, currentTime;
 
     string fileNameHR, fileNameEye, fileNameIMU, fileNameFace;
+
+    HPOmnicept hPOmniceptObject;
+    //MetaQuest metaQuest;
+    //HTCVive htcVive;
 
     enum Headset {
         HP_Omnicept_Reverb_G2,
@@ -70,7 +78,45 @@ public class InsightVR : MonoBehaviour
         header = String.Format("Time", "Face Tracking Data");
         File.WriteAllText(fileNameFace, header);
 
-        thisHeadset = Headset.HP_Omnicept_Reverb_G2;
+        captures = new bool[4];
+        for(int i = 0; i < captures.Length; i++) {
+            captures[i] = true;
+        }
+
+        switch(thisHeadset) {
+            case Headset.HP_Omnicept_Reverb_G2:
+                deviceNum = 1;
+                hPOmniceptObject = new HPOmnicept(captures);
+                break;
+            case Headset.Meta_Quest_Pro:
+                deviceNum = 2;
+                //metaQuest = new MetaQuest(captures);
+                break;
+            case Headset.HTC_Vive:
+                deviceNum = 3;
+                //htcVive = new HTCVive(captures);
+                break;
+            default:
+                deviceNum = 0;
+                break;
+        }
+    }
+
+    public void Update() {
+        switch(deviceNum) {
+            case 1:
+                hPOmniceptObject.Update();
+                break;
+            case 2:
+                //metaQuest.Update();
+                break;
+            case 3:
+                //htcVive.Update();
+                break;
+            default:
+                deviceNum = 0;
+                break;
+        }
     }
 
     public void OnDestroy()
