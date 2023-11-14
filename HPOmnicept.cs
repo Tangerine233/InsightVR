@@ -10,6 +10,7 @@ using HP.Omnicept;
 using HP.Omnicept.Messaging;
 using HP.Omnicept.Messaging.Messages;
 using HP.Omnicept.Unity;
+using System.Runtime.InteropServices;
 // using HP.Omnicept.Unity;
 
 public class HPOmnicept : MonoBehaviour
@@ -20,7 +21,11 @@ public class HPOmnicept : MonoBehaviour
     private Glia m_gliaClient;
     private GliaValueCache m_gliaValCache;
     protected SubscriptionList m_subList;
-    protected Task m_connectTask;
+    //protected Task m_connectTask;
+
+    //
+    public bool recordHR, recordEye, recordCam, recordIMU;
+    public string startTime, dirName,dirCam, fileNameHR, fileNameEye,fileNameCam, fileNameIMU;
 
 
     public bool m_isConnected { get; private set; }
@@ -83,10 +88,79 @@ public class HPOmnicept : MonoBehaviour
     public void Start()
     {
         StartGlia();
-        fileName = "HR_" + DateTime.Now.ToString("_yyyyMMdd_HH_mm_ss") + ".csv";
-        File.WriteAllText(fileName, "");
 
-        cameraImageTex2D = new Texture2D(400, 400, TextureFormat.R8, false);
+        //create dir
+        startTime = DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_ms");
+        dirName = startTime + "_HP_Omincept_captures";
+        dirCam = dirName + "/FaceImages";
+        Directory.CreateDirectory(dirName);
+
+        // TO-DO: get follow booleans from the main framework
+        var (recordHR, recordEye, recordCam, recordIMU) = (true, true, true, true);
+
+        // create capture files
+        if (recordHR)
+        {
+            fileNameHR = dirName+"/HR_" + startTime + ".csv";
+            // first line
+            File.WriteAllText(fileNameHR, "Time,HR/n");
+        }
+        if (recordEye)
+        {
+            fileNameHR = dirName + "/Eye_" + startTime + ".csv";
+
+            // first line
+            string[] eyeVar = { "leftGazeX", "leftGazeY"
+                    , "leftGazeY"
+                    , "leftGazeZ"
+                    , "leftGazeConfidence"
+                    , "leftPilposition"
+                    , "leftOpenness"
+                    , "leftOpennessConfidence"
+                    , "leftPupilDilation"
+                    , "leftPupilDilationConfidence"
+                    , "rightGazeX"
+                    , "rightGazeY"
+                    , "rightGazeZ"
+                    , "rightGazeConfidence"
+                    , "rightPilposition"
+                    , "rightOpenness"
+                    , "rightOpennessConfidence"
+                    , "rightPupilDilation"
+                    , "rightPupilDilationConfidence"
+                    , "combinGazeX"
+                    , "combinGazeY"
+                    , "combinGazeZ"
+                    + "combineGazeConfidence"};
+
+            File.WriteAllText(fileNameEye, "Time,");
+            for (int i = 0; i < eyeVar.Length; i++)
+            {
+                File.AppendAllText(fileNameEye, eyeVar[0] + ",");
+            }
+            File.AppendAllText(fileNameEye, "/n");
+
+        }
+        if (recordCam)
+        {
+            fileNameHR = dirName + "/Face_" + startTime + ".csv";
+
+            // first line
+            File.WriteAllText(fileNameCam, "Time,frameNumber,fps/n");
+
+            // create dir for pics
+            Directory.CreateDirectory(dirCam);
+
+            // create image temp
+            cameraImageTex2D = new Texture2D(400, 400, TextureFormat.R8, false);
+        }
+        if (recordIMU)
+        {
+            fileNameHR = dirName + "/IMU_" + startTime + ".csv";
+
+            // first line
+            File.WriteAllText(fileNameIMU, "Time,/n");
+        }
 
     }
 
@@ -132,6 +206,7 @@ public class HPOmnicept : MonoBehaviour
         switch (msg.Header.MessageType)
         {
             case MessageTypes.ABI_MESSAGE_HEART_RATE:
+                if (!recordHR) break;
                 var heartRate = m_gliaClient.Connection.Build<HeartRate>(msg);
 
                 // populate string para
@@ -146,15 +221,15 @@ public class HPOmnicept : MonoBehaviour
                 // test log
                 Debug.Log("HR: "+rate);
 
-                // test write file
-                File.AppendAllText(fileName, DateTime.Now.ToString() + "," + heartRate.Rate.ToString() + "\n");
+                // write file
+                File.AppendAllText(fileNameHR, DateTime.Now.ToString() + "," + rate + "\n");
                 break;
 
 
             case MessageTypes.ABI_MESSAGE_EYE_TRACKING:
+                if (!recordEye) break;
                 var eyeTracking = m_gliaClient.Connection.Build<EyeTracking>(msg);
 
-                // test log eye tracking
                 // Debug.Log(eyeTracking);
 
                 // populate string para
@@ -184,14 +259,43 @@ public class HPOmnicept : MonoBehaviour
 
                 // combine
                 var combinGazeX = eyeTracking.CombinedGaze.X.ToString();
+                var combinGazeY = eyeTracking.CombinedGaze.Y.ToString();
+                var combinGazeZ = eyeTracking.CombinedGaze.Z.ToString();
+                var combineGazeConfidence = eyeTracking.CombinedGaze.Confidence.ToString();
+
+                // debug log
+                // Debug.Log("LeftEyeGaze: X-"+leftGazeX+" Y-"+leftGazeY+" Z-"+leftGazeZ);
 
 
-                Debug.Log("LeftEyeGaze: X-"+leftGazeX+" Y-"+leftGazeY+" Z-"+leftGazeZ);
-
+                // write file
+                File.AppendAllText(fileNameHR, DateTime.Now.ToString() + "," 
+                    + leftGazeX + ","  
+                    + leftGazeY + ","
+                    + leftGazeZ + ","
+                    + leftGazeConfidence + ","
+                    + leftPilposition + ","
+                    + leftOpenness + ","
+                    + leftOpennessConfidence + ","
+                    + leftPupilDilation + ","
+                    + leftPupilDilationConfidence + ","
+                    + rightGazeX + ","
+                    + rightGazeY + ","
+                    + rightGazeZ + ","
+                    + rightGazeConfidence + ","
+                    + rightPilposition + ","
+                    + rightOpenness + ","
+                    + rightOpennessConfidence + ","
+                    + rightPupilDilation + ","
+                    + rightPupilDilationConfidence + ","
+                    + combinGazeX + ","
+                    + combinGazeY + ","
+                    + combinGazeZ + ","
+                    + combineGazeConfidence + "\n");
                 break;
 
 
             case MessageTypes.ABI_MESSAGE_CAMERA_IMAGE:
+                if (!recordCam) break;
                 var cameraImage = m_gliaClient.Connection.Build<CameraImage>(msg);
 
                 // Load data into the texture and upload it to the GPU.
@@ -199,20 +303,27 @@ public class HPOmnicept : MonoBehaviour
                 cameraImageTex2D.Apply();
 
                 var frameNumber = cameraImage.FrameNumber;
-                var fPS = cameraImage.FrameNumber;
+                var fPS = cameraImage.FramesPerSecond;
                 Debug.Log("FaceImage: frameNumber-" + frameNumber + " fPS-" + fPS);
 
 
+                // write csv file
+                File.AppendAllText(fileNameCam, DateTime.Now.ToString() + "," + frameNumber + "," + fPS);
 
-                // test file write
+                // write png file
                 byte[] faceImage = cameraImageTex2D.EncodeToPNG();
+
                 File.WriteAllBytes("/FaceImages/Image_"+ frameNumber.ToString() +"_"+DateTime.Now.ToString("_yyyyMMdd_HH_mm_ss")+".png", faceImage);
 
                 break;
 
 
             case MessageTypes.ABI_MESSAGE_IMU_FRAME:
+                if (!recordIMU) break;
+
                 var imuFrame = m_gliaClient.Connection.Build<IMUFrame>(msg);
+
+                Debug.Log("imuFrame: "+imuFrame.ToString());
 
                 var acc = imuFrame.Data[0].ToString();
                 var gyro = imuFrame.Data[1].ToString();
@@ -223,7 +334,15 @@ public class HPOmnicept : MonoBehaviour
 
 
                 break;
-            /*
+            
+            default:
+                break;
+        }
+
+    }
+
+}
+/*
             case MessageTypes.ABI_MESSAGE_HEART_RATE_FRAME:
                 break;
 
@@ -323,11 +442,3 @@ public class HPOmnicept : MonoBehaviour
                 }
                 break;
                 */
-
-            default:
-                break;
-        }
-
-    }
-
-}
