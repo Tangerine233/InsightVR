@@ -107,7 +107,7 @@ public class HPOmnicept : MonoBehaviour
         }
         if (recordEye)
         {
-            fileNameHR = dirName + "/Eye_" + startTime + ".csv";
+            fileNameEye = dirName + "/Eye_" + startTime + ".csv";
 
             // first line
             string[] eyeVar = { "leftGazeX", "leftGazeY"
@@ -143,7 +143,7 @@ public class HPOmnicept : MonoBehaviour
         }
         if (recordCam)
         {
-            fileNameHR = dirName + "/Face_" + startTime + ".csv";
+            fileNameCam = dirName + "/Face_" + startTime + ".csv";
 
             // first line
             File.WriteAllText(fileNameCam, "Time,frameNumber,fps/n");
@@ -156,7 +156,7 @@ public class HPOmnicept : MonoBehaviour
         }
         if (recordIMU)
         {
-            fileNameHR = dirName + "/IMU_" + startTime + ".csv";
+            fileNameIMU = dirName + "/IMU_" + startTime + ".csv";
 
             // first line
             File.WriteAllText(fileNameIMU, "Time,/n");
