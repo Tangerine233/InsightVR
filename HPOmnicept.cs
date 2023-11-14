@@ -206,7 +206,7 @@ public class HPOmnicept : MonoBehaviour
         switch (msg.Header.MessageType)
         {
             case MessageTypes.ABI_MESSAGE_HEART_RATE:
-                if (!recordHR) break;
+               // if (!recordHR) break;
                 var heartRate = m_gliaClient.Connection.Build<HeartRate>(msg);
 
                 // populate string para
@@ -227,7 +227,7 @@ public class HPOmnicept : MonoBehaviour
 
 
             case MessageTypes.ABI_MESSAGE_EYE_TRACKING:
-                if (!recordEye) break;
+                //if (!recordEye) break;
                 var eyeTracking = m_gliaClient.Connection.Build<EyeTracking>(msg);
 
                 // Debug.Log(eyeTracking);
@@ -295,7 +295,7 @@ public class HPOmnicept : MonoBehaviour
 
 
             case MessageTypes.ABI_MESSAGE_CAMERA_IMAGE:
-                if (!recordCam) break;
+                //if (!recordCam) break;
                 var cameraImage = m_gliaClient.Connection.Build<CameraImage>(msg);
 
                 // Load data into the texture and upload it to the GPU.
@@ -313,24 +313,29 @@ public class HPOmnicept : MonoBehaviour
                 // write png file
                 byte[] faceImage = cameraImageTex2D.EncodeToPNG();
 
-                File.WriteAllBytes("/FaceImages/Image_"+ frameNumber.ToString() +"_"+DateTime.Now.ToString("_yyyyMMdd_HH_mm_ss")+".png", faceImage);
+                File.WriteAllBytes(dirCam+"/Image_"+ frameNumber.ToString() +"_"+DateTime.Now.ToString("_yyyyMMdd_HH_mm_ss")+".png", faceImage);
 
                 break;
 
 
             case MessageTypes.ABI_MESSAGE_IMU_FRAME:
-                if (!recordIMU) break;
+                //if (!recordIMU) break;
 
                 var imuFrame = m_gliaClient.Connection.Build<IMUFrame>(msg);
 
                 Debug.Log("imuFrame: "+imuFrame.ToString());
 
-                var acc = imuFrame.Data[0].ToString();
-                var gyro = imuFrame.Data[1].ToString();
+
+                var accX = imuFrame.Data[0].Acc.X.ToString();
+                var accY = imuFrame.Data[0].Acc.Y.ToString();
+                var accZ = imuFrame.Data[0].Acc.Z.ToString();
+                var gyroX = imuFrame.Data[1].Gyro.X.ToString();
+                var gyroY = imuFrame.Data[1].Gyro.Y.ToString();
+                var gyroZ = imuFrame.Data[1].Gyro.Z.ToString();
 
 
                 // test log
-                Debug.Log("IMU: acc-"+acc+" gyro-"+gyro);
+                Debug.Log("IMU: acc-"+ imuFrame.Data[0].Acc.ToString() + " gyro-"+ imuFrame.Data[0].Gyro.ToString());
 
 
                 break;
