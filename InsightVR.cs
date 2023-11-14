@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -25,9 +26,31 @@ public class InsightVR : MonoBehaviour
     private bool showIMUMessages = true;
     [SerializeField]
     private bool showSubscriptionResultListMessages = true;
+    
+    [SerializeField] 
+    Headset thisHeadset = new Headset();
+    public int deviceNum;
+
+    [SerializeField]
+    public bool[] captures;
 
     public Material cameraImageMat;
     private Texture2D cameraImageTex2D;
+
+    public int startTime, timeStamp, currentTime;
+
+    string fileNameHR, fileNameEye, fileNameIMU, fileNameFace;
+
+    HPOmnicept hPOmniceptObject;
+    //MetaQuest metaQuest;
+    //HTCVive htcVive;
+
+    enum Headset {
+        HP_Omnicept_Reverb_G2,
+        Meta_Quest_Pro,
+        HTC_Vive
+        //can add more headsets down the line
+    }
 
 
     public void Start()
@@ -37,6 +60,63 @@ public class InsightVR : MonoBehaviour
         {
             cameraImageMat.mainTexture = cameraImageTex2D;
         }
+        startTime = DateTime.Now.Millisecond;
+        fileNameHR = "HR_" + DateTime.Now.ToString("_yyyy_MMdd_HH_mm_ss") + ".csv";
+        fileNameEye = "Eye_" + DateTime.Now.ToString("_yyyy_MMdd_HH_mm_ss") + ".csv";
+        fileNameIMU = "IMU_" + DateTime.Now.ToString("_yyyy_MMdd_HH_mm_ss") + ".csv";
+        fileNameFace = "Face_" + DateTime.Now.ToString("_yyyy_MMdd_HH_mm_ss") + ".csv";
+
+        var header = String.Format("Time", "Heart Rate");
+        File.WriteAllText(fileNameHR, header);
+
+        header = String.Format("Time", "Combined Gaze", "Pupil Position Left", "Pupil Position Right", "Pupil Dilation", "Openness");
+        File.WriteAllText(fileNameEye, header);
+        
+        header = String.Format("Time", "IMU Data");
+        File.WriteAllText(fileNameIMU, header);
+        
+        header = String.Format("Time", "Face Tracking Data");
+        File.WriteAllText(fileNameFace, header);
+
+        captures = new bool[4];
+        for(int i = 0; i < captures.Length; i++) {
+            captures[i] = true;
+        }
+
+        switch(thisHeadset) {
+            case Headset.HP_Omnicept_Reverb_G2:
+                deviceNum = 1;
+                hPOmniceptObject = new HPOmnicept(captures);
+                break;
+            case Headset.Meta_Quest_Pro:
+                deviceNum = 2;
+                //metaQuest = new MetaQuest(captures);
+                break;
+            case Headset.HTC_Vive:
+                deviceNum = 3;
+                //htcVive = new HTCVive(captures);
+                break;
+            default:
+                deviceNum = 0;
+                break;
+        }
+    }
+
+    public void Update() {
+        switch(deviceNum) {
+            case 1:
+                hPOmniceptObject.Update();
+                break;
+            case 2:
+                //metaQuest.Update();
+                break;
+            case 3:
+                //htcVive.Update();
+                break;
+            default:
+                deviceNum = 0;
+                break;
+        }
     }
 
     public void OnDestroy()
@@ -44,31 +124,29 @@ public class InsightVR : MonoBehaviour
         Destroy(cameraImageTex2D);
     }
 
-    public void writeHR(uint rate)
-    {
-        /*
-        using (var writer = new StreamWriter("TestFile.csv"))
-        {
-            writer.WriteLine(rate+"\n");
-            writer.WriteLine("aaaaa");
-        }
-        */
-        File.AppendAllText("TestFile.csv", rate.ToString() + "\n");
-    }
-
-
     public void HeartRateHandler(HeartRate hr)
     {
         if (showHeartRateMessages && hr != null)
         {
             Debug.Log(hr);
-            writeHR(hr.Rate);
-            //File.AppendAllText("TestFile.csv", hr.GetHashCode().ToString());
-
-
         }
     }
 
+    public void writeHR(String rate, String[] timeStamp)
+    {
+        var data = $"{"Hello"},{"Hi"}";
+        File.AppendAllText(fileNameHR, data + "\n");
+        
+        /*
+        //gets current time for time stamp, need to subtract start time for runtime value
+        currentTime = DateTime.UtcNow.Millisecond;
+        timeStamp = startTime - currentTime;
+
+        //add time stamp and heart rate to csv
+        var data = String.Format(timeStamp, rate);
+        File.AppendAllText(fileNameHR, data + "\n");
+        */
+    }
 
 
     public void PPGFrameHandler(PPGFrame ppg)
@@ -79,13 +157,73 @@ public class InsightVR : MonoBehaviour
         }
     }
 
-
     public void EyeTrackingHandler(EyeTracking eyeTracking)
     {
         if (showEyeTrackingMessages && eyeTracking != null)
         {
             Debug.Log(eyeTracking);
+        }   
+    }
+
+    public void writeEyeData(String[] leftEye, String[] rightEye, String[] combinedEyes, String[] timestamp) {
+        /*
+        //gets current time for time stamp, need to subtract start time for runtime value
+        currentTime = DateTime.UtcNow.Millisecond;
+        timeStamp = startTime - currentTime;
+
+        Vector3 combinedCurrent;
+        Vector2 leftPupPos, rightPupPos;
+        float leftPupDil, rightPupDil, leftOpen, rightOpen;
+
+        //"Combined Gaze", "Pupil Position Left", "Pupil Position Right", "Pupil Dilation", "Openness"
+        if(eyeTracking.combinedGazeConfidence >= .4f) {
+            combinedCurrent = new Vector3(eyeTracking.combinedGaze.x, eyeTracking.combinedGaze.y, eyeTracking.combinedGaze.z);
+        } else {
+            combinedCurrent = null;
         }
+
+        if(eyeTracking.leftPupilDilationConfidence >= .4f) {
+            leftPupDil = eyeTracking.leftPupilDilation;
+        } else {
+            leftPupDil = null;
+        }
+
+        if(eyeTracking.rightPupilDilationConfidence >= .4f) {
+            rightPupDil = eyeTracking.rightPupilDilation;
+        } else {
+            rightPupDil = null;
+        }
+
+        if(eyeTracking.leftPupilPositionConfidence >= .4f) {
+            leftPupPos = new Vector2(eyeTracking.leftPupilPosition.x, eyeTracking.leftPupilPosition.y);
+        } else {
+            leftPupPos = null;
+        }
+
+        if(eyeTracking.rightPupilPositionConfidence >= .4f) {
+            rightPupPos = new Vector2(eyeTracking.rightPupilPosition.x, eyeTracking.rightPupilPosition.y);
+        } else {
+            rightPupPos = null;
+        }
+
+        if(eyeTracking.leftEyeOpennessConfidence >= .4f) {
+            leftOpen = eyeTracking.leftEyeOpenness;
+        } else {
+            leftOpen = null;
+        }
+
+        if(eyeTracking.rightEyeOpennessConfidence >= .4f) {
+            rightOpen = eyeTracking.rightEyeOpenness;
+        } else {
+            rightOpen = null;
+        }
+
+        //add time stamp and eye data to csv
+        var data = String.Format(timeStamp, combinedCurrent.ToString(), leftPupDil, rightPupDil, leftPupPos, rightPupPos, leftOpen, rightOpen);
+        File.AppendAllText(fileNameEye, data + "\n");
+        */
+        var data = $"{"Hello"},{"Test"}";
+        File.AppendAllText(fileNameEye, data + "\n");
     }
 
     public void VSyncHandler(VSync vsync)
@@ -111,6 +249,11 @@ public class InsightVR : MonoBehaviour
                 cameraImageTex2D.Apply();
             }
         }
+        //currentTime = DateTime.UtcNow.Millisecond;
+        //timeStamp = startTime - currentTime;
+
+        //var data = String.Format(timeStamp, cameraImage);
+        //File.AppendAllText(fileNameFace, data + "\n");
     }
 
     public void IMUFrameHandler(IMUFrame imu)
@@ -119,6 +262,11 @@ public class InsightVR : MonoBehaviour
         {
             Debug.Log(imu);
         }
+        //currentTime = DateTime.UtcNow.Millisecond;
+        //timeStamp = startTime - currentTime;
+
+        //var data = String.Format(timeStamp, imu);
+        //File.AppendAllText(fileNameIMU, data + "\n");
     }
 
     public void DisconnectHandler(string msg)
