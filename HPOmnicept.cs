@@ -9,29 +9,24 @@ using System.IO;
 using HP.Omnicept;
 using HP.Omnicept.Messaging;
 using HP.Omnicept.Messaging.Messages;
-using HP.Omnicept.Unity;
 using System.Runtime.InteropServices;
 using UnityEngine.Profiling;
 // using HP.Omnicept.Unity;
 
 public class HPOmnicept
 {
-    private String fileName;
-
     // omnicept client object
     private Glia m_gliaClient;
     private GliaValueCache m_gliaValCache;
     protected SubscriptionList m_subList;
-    //protected Task m_connectTask;
 
-    //
-    public bool recordHR, recordEye, recordCam, recordIMU;
-    public string dirName,dirCam, fileNameHR, fileNameEye,fileNameCam, fileNameIMU, currTime;
+    private bool recordHR, recordEye, recordCam, recordIMU;
+    private string dirName,dirCam, fileNameHR, fileNameEye,fileNameCam, fileNameIMU, currTime;
 
 
     public bool m_isConnected { get; private set; }
-    public Action<EyeTracking> OnEyeTracking = tracking => { };
 
+    // message subscribtions list 
     private readonly List<uint> messageTypeList = new List<uint>
     {
         {0}, // none
@@ -40,7 +35,6 @@ public class HPOmnicept
         {MessageTypes.ABI_MESSAGE_CAMERA_IMAGE}, // Camera Image
         {MessageTypes.ABI_MESSAGE_IMU_FRAME}, //IMU
     };
-    public Material cameraImageMat;
     private Texture2D cameraImageTex2D;
 
 
@@ -76,7 +70,7 @@ public class HPOmnicept
             m_gliaClient.setSubscriptions(m_subList);
             m_isConnected = true;
 
-            Debug.Log("Connected To Omnicept Runtime");
+            Debug.Log("[InsightVR_Omnicept] Connected To Omnicept Runtime");
         }
         catch (Exception e)
         {
@@ -211,20 +205,12 @@ public class HPOmnicept
         switch (msg.Header.MessageType)
         {
             case MessageTypes.ABI_MESSAGE_HEART_RATE:
-                // if (!recordHR) break;
+                if (!recordHR) break;
                 var heartRate = m_gliaClient.Connection.Build<HeartRate>(msg);
                 currTime = updateCurrTime(heartRate.Timestamp.HardwareTimeMicroSeconds);
-                //currTime = (new DateTime(heartRate.Timestamp.SystemTimeMicroSeconds)).ToString("yyyy-MM-dd HH:mm:ss.fffffff");
-                //currTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss:ms");
-                Debug.Log("currTime: "+currTime);
 
                 // populate string para
                 var rate = heartRate.Rate.ToString();
-
-                //var timeStampSystem = heartRate.Timestamp.SystemTimeMicroSeconds;
-                //var timeStampOmnicept = heartRate.Timestamp.OmniceptTimeMicroSeconds;
-                //var timeStampHardware = heartRate.Timestamp.HardwareTimeMicroSeconds;
-
 
                 // write file
                 File.AppendAllText(fileNameHR, currTime + "," + rate + "\n");
@@ -232,11 +218,10 @@ public class HPOmnicept
 
 
             case MessageTypes.ABI_MESSAGE_EYE_TRACKING:
-                //if (!recordEye) break;
+                if (!recordEye) break;
                 var eyeTracking = m_gliaClient.Connection.Build<EyeTracking>(msg);
                 currTime = updateCurrTime(eyeTracking.Timestamp.HardwareTimeMicroSeconds);
 
-                // populate string para
                 // left eye
                 var leftGazeX = eyeTracking.LeftEye.Gaze.X.ToString();
                 var leftGazeY = eyeTracking.LeftEye.Gaze.Y.ToString();
@@ -266,8 +251,6 @@ public class HPOmnicept
                 var combinGazeY = eyeTracking.CombinedGaze.Y.ToString();
                 var combinGazeZ = eyeTracking.CombinedGaze.Z.ToString();
                 var combineGazeConfidence = eyeTracking.CombinedGaze.Confidence.ToString();
-                // Debug.Log("LeftEyeGaze: X-"+leftGazeX+" Y-"+leftGazeY+" Z-"+leftGazeZ);
-
 
                 // write file
                 File.AppendAllText(fileNameEye, currTime + ","
@@ -297,7 +280,7 @@ public class HPOmnicept
 
 
             case MessageTypes.ABI_MESSAGE_CAMERA_IMAGE:
-                //if (!recordCam) break;
+                if (!recordCam) break;
                 var cameraImage = m_gliaClient.Connection.Build<CameraImage>(msg);
                 currTime = updateCurrTime(cameraImage.Timestamp.HardwareTimeMicroSeconds);
 
@@ -307,22 +290,19 @@ public class HPOmnicept
 
                 var frameNumber = cameraImage.FrameNumber;
                 var fPS = cameraImage.FramesPerSecond;
-                Debug.Log("FaceImage: frameNumber-" + frameNumber + " fPS-" + fPS);
-
 
                 // write csv file
                 File.AppendAllText(fileNameCam, currTime + "," + frameNumber + "," + fPS);
 
                 // write png file
                 byte[] faceImage = cameraImageTex2D.EncodeToPNG();
-
                 File.WriteAllBytes(dirCam + "/Image_" + frameNumber.ToString() + "_" + currTime + ".png", faceImage);
 
                 break;
 
 
             case MessageTypes.ABI_MESSAGE_IMU_FRAME:
-                //if (!recordIMU) break;
+                if (!recordIMU) break;
 
                 var imuFrame = m_gliaClient.Connection.Build<IMUFrame>(msg);
                 currTime = updateCurrTime(imuFrame.Timestamp.HardwareTimeMicroSeconds);
@@ -351,107 +331,5 @@ public class HPOmnicept
             default:
                 break;
         }
-
     }
-
 }
-/*
-            case MessageTypes.ABI_MESSAGE_HEART_RATE_FRAME:
-                break;
-
-   
-            //---------------
-            case MessageTypes.ABI_MESSAGE_HEART_RATE_VARIABILITY:
-                if (OnHeartRateVariability != null)
-                {
-                    var heartRateVariability = m_gliaClient.Connection.Build<HeartRateVariability>(msg);
-                    OnHeartRateVariability.Invoke(heartRateVariability);
-                }
-                break;
-
-            //---------------
-            case MessageTypes.ABI_MESSAGE_PPG:
-                break;
-            case MessageTypes.ABI_MESSAGE_PPG_FRAME:
-                if (OnPPGEvent != null)
-                {
-                    var ppgFrame = m_gliaClient.Connection.Build<PPGFrame>(msg);
-                    OnPPGEvent.Invoke(ppgFrame);
-                }
-                break;
-
-            //---------------
-            case MessageTypes.ABI_MESSAGE_EYE_TRACKING:
-                if (OnEyeTracking != null)
-                {
-                    var eyeTracking = m_gliaClient.Connection.Build<EyeTracking>(msg);
-                    OnEyeTracking.Invoke(eyeTracking);
-                }
-                break;
-            case MessageTypes.ABI_MESSAGE_EYE_TRACKING_FRAME:
-                break;
-
-            //---------------
-            case MessageTypes.ABI_MESSAGE_VSYNC:
-                if (OnVSync != null)
-                {
-                    var vsync = m_gliaClient.Connection.Build<VSync>(msg);
-                    OnVSync.Invoke(vsync);
-                }
-                break;
-
-            //---------------
-            case MessageTypes.ABI_MESSAGE_SCENE_COLOR:
-                break;
-            case MessageTypes.ABI_MESSAGE_SCENE_COLOR_FRAME:
-                break;
-
-            //---------------
-            case MessageTypes.ABI_MESSAGE_COGNITIVE_LOAD:
-                if (OnCognitiveLoad != null)
-                {
-                    var cload = m_gliaClient.Connection.Build<CognitiveLoad>(msg);
-                    OnCognitiveLoad.Invoke(cload);
-                }
-                break;
-            case MessageTypes.ABI_MESSAGE_COGNITIVE_LOAD_INPUT_FEATURE:
-                break;
-
-            //---------------
-            case MessageTypes.ABI_MESSAGE_BYTE_MESSAGE:
-                break;
-
-            //---------------
-            case MessageTypes.ABI_MESSAGE_CAMERA_IMAGE:
-                if (OnCameraImage != null)
-                {
-                    var cameraImage = m_gliaClient.Connection.Build<CameraImage>(msg);
-                    OnCameraImage.Invoke(cameraImage);
-                }
-                break;
-            case MessageTypes.ABI_MESSAGE_DATA_VAULT_RESULT:
-                if (OnDataVaultResult != null)
-                {
-                    var dataVaultResult = m_gliaClient.Connection.Build<DataVaultResult>(msg);
-                    OnDataVaultResult.Invoke(dataVaultResult);
-                }
-                break;
-
-            //---------------
-            case MessageTypes.ABI_MESSAGE_IMU:
-                break;
-            case MessageTypes.ABI_MESSAGE_IMU_FRAME:
-                if (OnIMUEvent != null)
-                {
-                    var imuFrame = m_gliaClient.Connection.Build<IMUFrame>(msg);
-                    OnIMUEvent.Invoke(imuFrame);
-                }
-                break;
-            case MessageTypes.ABI_MESSAGE_SUBSCRIPTION_RESULT_LIST:
-                if (OnSubscriptionResultListEvent != null)
-                {
-                    var SRLmsg = m_gliaClient.Connection.Build<SubscriptionResultList>(msg);
-                    OnSubscriptionResultListEvent.Invoke(SRLmsg);
-                }
-                break;
-                */
