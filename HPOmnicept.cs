@@ -1,17 +1,22 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+//FileName: HPOmnicept.cs
+//FileType: Visual C# Source file
+//Author : Kainuo He
+//Created On : 10/3/2023
+//Last Modified On : 11/18/2023
+//Description : Sub-Module for InsightVR framework on HP G2 Omincept Edition.Object construct with
+//              bool[] of size 4 to enable files writing for captured Heart Rate, Eye Tracking,
+//              Face Camera Image,and IMU
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Threading.Tasks;
 using System.IO;
-
-// Omnincept API
 using HP.Omnicept;
 using HP.Omnicept.Messaging;
 using HP.Omnicept.Messaging.Messages;
-using System.Runtime.InteropServices;
-using UnityEngine.Profiling;
-// using HP.Omnicept.Unity;
 
 public class HPOmnicept
 {
@@ -80,6 +85,7 @@ public class HPOmnicept
         return m_isConnected;
     }
 
+    // Class Constructor
     public HPOmnicept(bool[] captures)
     {
         StartGlia();
