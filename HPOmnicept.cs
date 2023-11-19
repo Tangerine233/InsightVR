@@ -11,9 +11,10 @@ using HP.Omnicept.Messaging;
 using HP.Omnicept.Messaging.Messages;
 using HP.Omnicept.Unity;
 using System.Runtime.InteropServices;
+using UnityEngine.Profiling;
 // using HP.Omnicept.Unity;
 
-public class HPOmnicept : MonoBehaviour
+public class HPOmnicept
 {
     private String fileName;
 
@@ -25,7 +26,7 @@ public class HPOmnicept : MonoBehaviour
 
     //
     public bool recordHR, recordEye, recordCam, recordIMU;
-    public string startTime, dirName,dirCam, fileNameHR, fileNameEye,fileNameCam, fileNameIMU;
+    public string dirName,dirCam, fileNameHR, fileNameEye,fileNameCam, fileNameIMU, currTime;
 
 
     public bool m_isConnected { get; private set; }
@@ -85,29 +86,32 @@ public class HPOmnicept : MonoBehaviour
         return m_isConnected;
     }
 
-    public void Start()
+    public HPOmnicept(bool[] captures)
     {
         StartGlia();
 
         //create dir
-        startTime = DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_ms");
-        dirName = startTime + "_HP_Omincept_captures";
-        dirCam = dirName + "/FaceImages";
+        currTime = DateTime.Now.ToString("yyyyMMdd_HH_mm_ss");
+        dirName = currTime + "_HP_Omincept_captures";
         Directory.CreateDirectory(dirName);
 
         // TO-DO: get follow booleans from the main framework
-        var (recordHR, recordEye, recordCam, recordIMU) = (true, true, true, true);
+        recordHR = captures[0];
+        recordEye = captures[1];
+        recordCam = captures[2];
+        recordIMU = captures[3];
+
 
         // create capture files
         if (recordHR)
         {
-            fileNameHR = dirName+"/HR_" + startTime + ".csv";
+            fileNameHR = dirName+"/HR_" + currTime + ".csv";
             // first line
-            File.WriteAllText(fileNameHR, "Time,HR/n");
+            File.WriteAllText(fileNameHR, "Time,HR\n");
         }
         if (recordEye)
         {
-            fileNameEye = dirName + "/Eye_" + startTime + ".csv";
+            fileNameEye = dirName + "/Eye_" + currTime + ".csv";
 
             // first line
             string[] eyeVar = { "leftGazeX", "leftGazeY"
@@ -131,24 +135,25 @@ public class HPOmnicept : MonoBehaviour
                     , "combinGazeX"
                     , "combinGazeY"
                     , "combinGazeZ"
-                    + "combineGazeConfidence"};
+                    , "combineGazeConfidence"};
 
             File.WriteAllText(fileNameEye, "Time,");
             for (int i = 0; i < eyeVar.Length; i++)
             {
-                File.AppendAllText(fileNameEye, eyeVar[0] + ",");
+                File.AppendAllText(fileNameEye, eyeVar[i] + ",");
             }
-            File.AppendAllText(fileNameEye, "/n");
+            File.AppendAllText(fileNameEye, "\n");
 
         }
         if (recordCam)
         {
-            fileNameCam = dirName + "/Face_" + startTime + ".csv";
+            fileNameCam = dirName + "/Face_" + currTime + ".csv";
 
             // first line
-            File.WriteAllText(fileNameCam, "Time,frameNumber,fps/n");
+            File.WriteAllText(fileNameCam, "Time,frameNumber,fps\n");
 
             // create dir for pics
+            dirCam = dirName + "/"+currTime+"FaceImages";
             Directory.CreateDirectory(dirCam);
 
             // create image temp
@@ -156,16 +161,16 @@ public class HPOmnicept : MonoBehaviour
         }
         if (recordIMU)
         {
-            fileNameIMU = dirName + "/IMU_" + startTime + ".csv";
+            fileNameIMU = dirName + "/IMU_" + currTime + ".csv";
 
             // first line
-            File.WriteAllText(fileNameIMU, "Time,/n");
+            File.WriteAllText(fileNameIMU, "Time,IMU#,Acc-X,Acc-Y,Acc-Z,Gyro-X,Gyro-Y,Gyro-Z\n");
         }
 
     }
 
 
-    void Update()
+    public void Update()
     {
         if (m_isConnected)
         {
@@ -196,9 +201,9 @@ public class HPOmnicept : MonoBehaviour
         return msg;
     }
 
-    void timeStampHandler(Timestamp ts)
+    string updateCurrTime(long microSec)
     {
-
+        return DateTimeOffset.FromUnixTimeMilliseconds(microSec / 1000).DateTime.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss:fff");
     }
 
     void HandleMessage(ITransportMessage msg)
@@ -206,31 +211,30 @@ public class HPOmnicept : MonoBehaviour
         switch (msg.Header.MessageType)
         {
             case MessageTypes.ABI_MESSAGE_HEART_RATE:
-               // if (!recordHR) break;
+                // if (!recordHR) break;
                 var heartRate = m_gliaClient.Connection.Build<HeartRate>(msg);
+                currTime = updateCurrTime(heartRate.Timestamp.HardwareTimeMicroSeconds);
+                //currTime = (new DateTime(heartRate.Timestamp.SystemTimeMicroSeconds)).ToString("yyyy-MM-dd HH:mm:ss.fffffff");
+                //currTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss:ms");
+                Debug.Log("currTime: "+currTime);
 
                 // populate string para
                 var rate = heartRate.Rate.ToString();
 
+                //var timeStampSystem = heartRate.Timestamp.SystemTimeMicroSeconds;
+                //var timeStampOmnicept = heartRate.Timestamp.OmniceptTimeMicroSeconds;
+                //var timeStampHardware = heartRate.Timestamp.HardwareTimeMicroSeconds;
 
-                // timeStamps
-                var timeStampSystem = heartRate.Timestamp.SystemTimeMicroSeconds;
-                var timeStampOmnicept = heartRate.Timestamp.OmniceptTimeMicroSeconds;
-                var timeStampHardware = heartRate.Timestamp.HardwareTimeMicroSeconds;
-
-                // test log
-                Debug.Log("HR: "+rate);
 
                 // write file
-                File.AppendAllText(fileNameHR, DateTime.Now.ToString() + "," + rate + "\n");
+                File.AppendAllText(fileNameHR, currTime + "," + rate + "\n");
                 break;
 
 
             case MessageTypes.ABI_MESSAGE_EYE_TRACKING:
                 //if (!recordEye) break;
                 var eyeTracking = m_gliaClient.Connection.Build<EyeTracking>(msg);
-
-                // Debug.Log(eyeTracking);
+                currTime = updateCurrTime(eyeTracking.Timestamp.HardwareTimeMicroSeconds);
 
                 // populate string para
                 // left eye
@@ -239,7 +243,7 @@ public class HPOmnicept : MonoBehaviour
                 var leftGazeZ = eyeTracking.LeftEye.Gaze.Z.ToString();
                 var leftGazeConfidence = eyeTracking.LeftEye.Gaze.Confidence.ToString();
                 var leftPilposition = "";
-                try { leftPilposition = eyeTracking.LeftEye.PupilPosition.ToString(); } catch {}
+                try { leftPilposition = eyeTracking.LeftEye.PupilPosition.ToString(); } catch { }
                 var leftOpenness = eyeTracking.LeftEye.Openness.ToString();
                 var leftOpennessConfidence = eyeTracking.LeftEye.OpennessConfidence.ToString();
                 var leftPupilDilation = eyeTracking.LeftEye.PupilDilation.ToString();
@@ -251,7 +255,7 @@ public class HPOmnicept : MonoBehaviour
                 var rightGazeZ = eyeTracking.RightEye.Gaze.Z.ToString();
                 var rightGazeConfidence = eyeTracking.RightEye.Gaze.Confidence.ToString();
                 var rightPilposition = "";
-                try { rightPilposition = eyeTracking.RightEye.PupilPosition.ToString(); } catch {}
+                try { rightPilposition = eyeTracking.RightEye.PupilPosition.ToString(); } catch { }
                 var rightOpenness = eyeTracking.RightEye.Openness.ToString();
                 var rightOpennessConfidence = eyeTracking.RightEye.OpennessConfidence.ToString();
                 var rightPupilDilation = eyeTracking.RightEye.PupilDilation.ToString();
@@ -262,14 +266,12 @@ public class HPOmnicept : MonoBehaviour
                 var combinGazeY = eyeTracking.CombinedGaze.Y.ToString();
                 var combinGazeZ = eyeTracking.CombinedGaze.Z.ToString();
                 var combineGazeConfidence = eyeTracking.CombinedGaze.Confidence.ToString();
-
-                // debug log
                 // Debug.Log("LeftEyeGaze: X-"+leftGazeX+" Y-"+leftGazeY+" Z-"+leftGazeZ);
 
 
                 // write file
-                File.AppendAllText(fileNameEye, DateTime.Now.ToString() + "," 
-                    + leftGazeX + ","  
+                File.AppendAllText(fileNameEye, currTime + ","
+                    + leftGazeX + ","
                     + leftGazeY + ","
                     + leftGazeZ + ","
                     + leftGazeConfidence + ","
@@ -297,6 +299,7 @@ public class HPOmnicept : MonoBehaviour
             case MessageTypes.ABI_MESSAGE_CAMERA_IMAGE:
                 //if (!recordCam) break;
                 var cameraImage = m_gliaClient.Connection.Build<CameraImage>(msg);
+                currTime = updateCurrTime(cameraImage.Timestamp.HardwareTimeMicroSeconds);
 
                 // Load data into the texture and upload it to the GPU.
                 cameraImageTex2D.LoadRawTextureData(cameraImage.ImageData);
@@ -308,12 +311,12 @@ public class HPOmnicept : MonoBehaviour
 
 
                 // write csv file
-                File.AppendAllText(fileNameCam, DateTime.Now.ToString() + "," + frameNumber + "," + fPS);
+                File.AppendAllText(fileNameCam, currTime + "," + frameNumber + "," + fPS);
 
                 // write png file
                 byte[] faceImage = cameraImageTex2D.EncodeToPNG();
 
-                File.WriteAllBytes(dirCam+"/Image_"+ frameNumber.ToString() +"_"+DateTime.Now.ToString("_yyyyMMdd_HH_mm_ss")+".png", faceImage);
+                File.WriteAllBytes(dirCam + "/Image_" + frameNumber.ToString() + "_" + currTime + ".png", faceImage);
 
                 break;
 
@@ -322,23 +325,28 @@ public class HPOmnicept : MonoBehaviour
                 //if (!recordIMU) break;
 
                 var imuFrame = m_gliaClient.Connection.Build<IMUFrame>(msg);
+                currTime = updateCurrTime(imuFrame.Timestamp.HardwareTimeMicroSeconds);
 
-                Debug.Log("imuFrame: "+imuFrame.ToString());
-
-
-                var accX = imuFrame.Data[0].Acc.X.ToString();
-                var accY = imuFrame.Data[0].Acc.Y.ToString();
-                var accZ = imuFrame.Data[0].Acc.Z.ToString();
-                var gyroX = imuFrame.Data[1].Gyro.X.ToString();
-                var gyroY = imuFrame.Data[1].Gyro.Y.ToString();
-                var gyroZ = imuFrame.Data[1].Gyro.Z.ToString();
+                // Debug.Log("imuFrame: " + imuFrame.ToString());
+                //Debug.Log("IMU: acc-" + imuFrame.Data[0].Acc.ToString() + " gyro-" + imuFrame.Data[0].Gyro.ToString());
 
 
-                // test log
-                Debug.Log("IMU: acc-"+ imuFrame.Data[0].Acc.ToString() + " gyro-"+ imuFrame.Data[0].Gyro.ToString());
-
+                // write file
+                for (int i = 0; i < imuFrame.Data.Count; i++) {
+                    File.AppendAllText(fileNameIMU,currTime
+                        + "," + i.ToString() //IMU-number
+                        + "," + imuFrame.Data[i].Acc.X.ToString()
+                        + "," + imuFrame.Data[i].Acc.Y.ToString()
+                        + "," + imuFrame.Data[i].Acc.Z.ToString()
+                        + "," + imuFrame.Data[i].Gyro.X.ToString()
+                        + "," + imuFrame.Data[i].Gyro.Y.ToString()
+                        + "," + imuFrame.Data[i].Gyro.Z.ToString()
+                        + "\n"
+                        );
+                }
 
                 break;
+                
             
             default:
                 break;
