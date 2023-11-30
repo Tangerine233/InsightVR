@@ -103,7 +103,7 @@ public class HPOmnicept
         //create dir
         parentDir = rootDir;
         currTime = DateTime.Now.ToString("yyyyMMdd_HH_mm_ss");
-        dirName = parentDir + "/" + currTime + "_HP_Omincept_captures";
+        dirName = parentDir + currTime + "_HP_Omincept_captures";
         Directory.CreateDirectory(dirName);
 
         // get follow booleans from the main framework
@@ -180,7 +180,7 @@ public class HPOmnicept
     //constructor overloading
     public HPOmnicept(bool[] captures, string rootDir)
     {
-        constructor(captures, rootDir);
+        constructor(captures, rootDir+"/");
     }
     public HPOmnicept(bool[] captures)
     {
