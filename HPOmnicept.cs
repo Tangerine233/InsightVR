@@ -29,7 +29,7 @@ public class HPOmnicept
 
     // declare variables
     private bool recordHR, recordEye, recordCam, recordIMU;
-    private string dirName,dirCam, fileNameHR, fileNameEye,fileNameCam, fileNameIMU, currTime;
+    private string parentDir, dirName,dirCam, fileNameHR, fileNameEye,fileNameCam, fileNameIMU, currTime;
     public bool m_isConnected { get; private set; }
 
     // message subscribtions list 
@@ -96,13 +96,14 @@ public class HPOmnicept
     ///////////////////////////////////////////////////
     // Class Constructor
     ///////////////////////////////////////////////////
-    public HPOmnicept(bool[] captures)
+    private void constructor(bool[] captures, string rootDir)
     {
         StartGlia();
 
         //create dir
+        parentDir = rootDir;
         currTime = DateTime.Now.ToString("yyyyMMdd_HH_mm_ss");
-        dirName = currTime + "_HP_Omincept_captures";
+        dirName = parentDir + "/" + currTime + "_HP_Omincept_captures";
         Directory.CreateDirectory(dirName);
 
         // get follow booleans from the main framework
@@ -114,7 +115,7 @@ public class HPOmnicept
         // create capture files
         if (recordHR)
         {
-            fileNameHR = dirName+"/HR_" + currTime + ".csv";
+            fileNameHR = dirName + "/HR_" + currTime + ".csv";
             // first line
             File.WriteAllText(fileNameHR, "Time,HR\n");
         }
@@ -162,7 +163,7 @@ public class HPOmnicept
             File.WriteAllText(fileNameCam, "Time,frameNumber,fps\n");
 
             // create dir for pics
-            dirCam = dirName + "/"+currTime+"FaceImages";
+            dirCam = dirName + "/" + currTime + "FaceImages";
             Directory.CreateDirectory(dirCam);
 
             // create image temp
@@ -175,8 +176,17 @@ public class HPOmnicept
             // first line
             File.WriteAllText(fileNameIMU, "Time,IMU#,Acc-X,Acc-Y,Acc-Z,Gyro-X,Gyro-Y,Gyro-Z\n");
         }
-
     }
+    //constructor overloading
+    public HPOmnicept(bool[] captures, string rootDir)
+    {
+        constructor(captures, rootDir);
+    }
+    public HPOmnicept(bool[] captures)
+    {
+        constructor(captures, "");
+    }
+
     ///////////////////////////////////////////////////
 
 
