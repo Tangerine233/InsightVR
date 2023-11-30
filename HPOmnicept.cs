@@ -3,7 +3,7 @@
 //FileType: Visual C# Source file
 //Author : Kainuo He
 //Created On : 10/3/2023
-//Last Modified On : 11/28/2023
+//Last Modified On : 11/30/2023
 //Description : Sub-Module for InsightVR framework on HP G2 Omincept Edition.Object construct with
 //              bool[] of size 4 to enable files writing for captured Heart Rate, Eye Tracking,
 //              Face Camera Image,and IMU
@@ -186,7 +186,16 @@ public class HPOmnicept
     {
         constructor(captures, "");
     }
-
+    public HPOmnicept()
+    {
+        bool[] captures = new bool[] { true, true, true, true };
+        constructor(captures, "");
+    }
+    public HPOmnicept(string rootDir)
+    {
+        bool[] captures = new bool[] { true, true, true, true };
+        constructor(captures, rootDir + "/");
+    }
     ///////////////////////////////////////////////////
 
 
@@ -304,7 +313,7 @@ public class HPOmnicept
         string[] hr = new string[2];
         var heartRate = m_gliaClient.Connection.Build<HeartRate>(msg);
 
-        currTime = updateCurrTime(heartRate.Timestamp.HardwareTimeMicroSeconds);
+        currTime = updateCurrTime(heartRate.Timestamp.SystemTimeMicroSeconds);
 
         // populate string para
         hr[0] = currTime;
@@ -319,7 +328,7 @@ public class HPOmnicept
     string[] EyeMessage(ITransportMessage msg)
     {
         var eyeTracking = m_gliaClient.Connection.Build<EyeTracking>(msg);
-        currTime = updateCurrTime(eyeTracking.Timestamp.HardwareTimeMicroSeconds);
+        currTime = updateCurrTime(eyeTracking.Timestamp.SystemTimeMicroSeconds);
 
         // left eye
         var leftGazeX = eyeTracking.LeftEye.Gaze.X.ToString();
@@ -386,7 +395,7 @@ public class HPOmnicept
     string[] FaceCamMessage(ITransportMessage msg)
     {
         var cameraImage = m_gliaClient.Connection.Build<CameraImage>(msg);
-        currTime = updateCurrTime(cameraImage.Timestamp.HardwareTimeMicroSeconds);
+        currTime = updateCurrTime(cameraImage.Timestamp.SystemTimeMicroSeconds);
 
         // Load data into the texture and upload it to the GPU.
         cameraImageTex2D.LoadRawTextureData(cameraImage.ImageData);
@@ -411,7 +420,7 @@ public class HPOmnicept
     string[,] ImuMessage(ITransportMessage msg)
     {
         var imuFrame = m_gliaClient.Connection.Build<IMUFrame>(msg);
-        currTime = updateCurrTime(imuFrame.Timestamp.HardwareTimeMicroSeconds);
+        currTime = updateCurrTime(imuFrame.Timestamp.SystemTimeMicroSeconds);
 
         int items = 8;
         string[,] imu = new string[imuFrame.Data.Count,items];
