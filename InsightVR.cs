@@ -60,10 +60,6 @@ public class InsightVR : MonoBehaviour
         for(int i = 0; i < captures.Length; i++) {
             captures[i] = true;
         }
-        captures[0] = true;
-        captures[1] = true;
-        captures[2] = false;
-        captures[3] = true;
 
         switch(thisHeadset) {
             case Headset.HP_Omnicept_Reverb_G2:
