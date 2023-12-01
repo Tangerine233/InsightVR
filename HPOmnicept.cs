@@ -331,34 +331,34 @@ public class HPOmnicept
         currTime = updateCurrTime(eyeTracking.Timestamp.SystemTimeMicroSeconds);
 
         // left eye
-        var leftGazeX = eyeTracking.LeftEye.Gaze.X.ToString();
-        var leftGazeY = eyeTracking.LeftEye.Gaze.Y.ToString();
-        var leftGazeZ = eyeTracking.LeftEye.Gaze.Z.ToString();
-        var leftGazeConfidence = eyeTracking.LeftEye.Gaze.Confidence.ToString();
-        var leftPilposition = "";
+        string leftGazeX = eyeTracking.LeftEye.Gaze.X.ToString();
+        string leftGazeY = eyeTracking.LeftEye.Gaze.Y.ToString();
+        string leftGazeZ = eyeTracking.LeftEye.Gaze.Z.ToString();
+        string leftGazeConfidence = eyeTracking.LeftEye.Gaze.Confidence.ToString();
+        string leftPilposition = "";
         try { leftPilposition = eyeTracking.LeftEye.PupilPosition.ToString(); } catch { }
-        var leftOpenness = eyeTracking.LeftEye.Openness.ToString();
-        var leftOpennessConfidence = eyeTracking.LeftEye.OpennessConfidence.ToString();
-        var leftPupilDilation = eyeTracking.LeftEye.PupilDilation.ToString();
-        var leftPupilDilationConfidence = eyeTracking.LeftEye.PupilDilationConfidence.ToString();
+        string leftOpenness = eyeTracking.LeftEye.Openness.ToString();
+        string leftOpennessConfidence = eyeTracking.LeftEye.OpennessConfidence.ToString();
+        string leftPupilDilation = eyeTracking.LeftEye.PupilDilation.ToString();
+        string leftPupilDilationConfidence = eyeTracking.LeftEye.PupilDilationConfidence.ToString();
 
         //right eye
-        var rightGazeX = eyeTracking.RightEye.Gaze.X.ToString();
-        var rightGazeY = eyeTracking.RightEye.Gaze.Y.ToString();
-        var rightGazeZ = eyeTracking.RightEye.Gaze.Z.ToString();
-        var rightGazeConfidence = eyeTracking.RightEye.Gaze.Confidence.ToString();
-        var rightPilposition = "";
+        string rightGazeX = eyeTracking.RightEye.Gaze.X.ToString();
+        string rightGazeY = eyeTracking.RightEye.Gaze.Y.ToString();
+        string rightGazeZ = eyeTracking.RightEye.Gaze.Z.ToString();
+        string rightGazeConfidence = eyeTracking.RightEye.Gaze.Confidence.ToString();
+        string rightPilposition = "";
         try { rightPilposition = eyeTracking.RightEye.PupilPosition.ToString(); } catch { }
-        var rightOpenness = eyeTracking.RightEye.Openness.ToString();
-        var rightOpennessConfidence = eyeTracking.RightEye.OpennessConfidence.ToString();
-        var rightPupilDilation = eyeTracking.RightEye.PupilDilation.ToString();
-        var rightPupilDilationConfidence = eyeTracking.RightEye.PupilDilationConfidence.ToString();
+        string rightOpenness = eyeTracking.RightEye.Openness.ToString();
+        string rightOpennessConfidence = eyeTracking.RightEye.OpennessConfidence.ToString();
+        string rightPupilDilation = eyeTracking.RightEye.PupilDilation.ToString();
+        string rightPupilDilationConfidence = eyeTracking.RightEye.PupilDilationConfidence.ToString();
 
         // combine
-        var combinGazeX = eyeTracking.CombinedGaze.X.ToString();
-        var combinGazeY = eyeTracking.CombinedGaze.Y.ToString();
-        var combinGazeZ = eyeTracking.CombinedGaze.Z.ToString();
-        var combineGazeConfidence = eyeTracking.CombinedGaze.Confidence.ToString();
+        string combinGazeX = eyeTracking.CombinedGaze.X.ToString();
+        string combinGazeY = eyeTracking.CombinedGaze.Y.ToString();
+        string combinGazeZ = eyeTracking.CombinedGaze.Z.ToString();
+        string combineGazeConfidence = eyeTracking.CombinedGaze.Confidence.ToString();
 
 
         string[] eye = new string[] {currTime
@@ -401,8 +401,8 @@ public class HPOmnicept
         cameraImageTex2D.LoadRawTextureData(cameraImage.ImageData);
         cameraImageTex2D.Apply();
 
-        var frameNumber = cameraImage.FrameNumber.ToString();
-        var fPS = cameraImage.FramesPerSecond.ToString();
+        string frameNumber = cameraImage.FrameNumber.ToString();
+        string fPS = cameraImage.FramesPerSecond.ToString();
 
 
         string[] face = new string[] { currTime, frameNumber, fPS };
@@ -412,8 +412,9 @@ public class HPOmnicept
         writeCSV(fileNameCam, face);
 
         // write png file
-        byte[] faceImage = cameraImageTex2D.EncodeToPNG();
-        File.WriteAllBytes(dirCam + "/Image_" + frameNumber.ToString() + "_" + currTime + ".png", faceImage);
+        writePNG(dirCam + "/Image_" + frameNumber + "_" + currTime + ".png");
+        //byte[] faceImage = cameraImageTex2D.EncodeToPNG();
+        //File.WriteAllBytes(dirCam + "/Image_" + frameNumber + "_" + currTime + ".png", faceImage);
 
         return face;
     }
