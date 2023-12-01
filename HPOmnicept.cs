@@ -3,7 +3,7 @@
 //FileType: Visual C# Source file
 //Author : Kainuo He
 //Created On : 10/3/2023
-//Last Modified On : 11/30/2023
+//Last Modified On : 12/1/2023
 //Description : Sub-Module for InsightVR framework on HP G2 Omincept Edition.Object construct with
 //              bool[] of size 4 to enable files writing for captured Heart Rate, Eye Tracking,
 //              Face Camera Image,and IMU
@@ -32,7 +32,7 @@ public class HPOmnicept
     private string parentDir, dirName,dirCam, fileNameHR, fileNameEye,fileNameCam, fileNameIMU, currTime;
     public bool m_isConnected { get; private set; }
 
-    // message subscribtions list 
+    // message subscribtions list from Omnicept runtime
     private readonly List<uint> messageTypeList = new List<uint>
     {
         {0}, // none
@@ -43,22 +43,29 @@ public class HPOmnicept
     };
     private Texture2D cameraImageTex2D;
 
+    // items for each captures, item each row in the CSV files
+    private string[] hrItems = new string[] { "Time", "HR" };
+    private string[] eyeItems = new string[] { "Time", "leftGazeX", "leftGazeY" , "leftGazeY" , "leftGazeZ" , "leftGazeConfidence" , "leftPilposition" , "leftOpenness" , "leftOpennessConfidence", "leftPupilDilation", "leftPupilDilationConfidence",
+                    "rightGazeX", "rightGazeY", "rightGazeZ", "rightGazeConfidence", "rightPilposition", "rightOpenness", "rightOpennessConfidence" , "rightPupilDilation", "rightPupilDilationConfidence", 
+                    "combinGazeX", "combinGazeY", "combinGazeZ", "combineGazeConfidence"};
+    private string[] faceItems = new string[] { "Time", "frameNumber", "FPS" };
+    private string[] imuItems = new string[] { "Time", "IMU#", "Acc-X", "Acc-Y", "Acc-Z", "Gyro -X", "Gyro-Y", "Gyro-Z" };
 
 
     ///////////////////////////////////////////////////
     // Connect Functions
     ///////////////////////////////////////////////////
     public void StopGlia()
-    {
-        if (m_gliaValCache != null)
-            m_gliaValCache?.Stop();
-        if (m_gliaClient != null)
-            m_gliaClient?.Dispose();
-        m_gliaValCache = null;
-        m_gliaClient = null;
-        m_isConnected = false;
-        Glia.cleanupNetMQConfig();
-    }
+        {
+            if (m_gliaValCache != null)
+                m_gliaValCache?.Stop();
+            if (m_gliaClient != null)
+                m_gliaClient?.Dispose();
+            m_gliaValCache = null;
+            m_gliaClient = null;
+            m_isConnected = false;
+            Glia.cleanupNetMQConfig();
+        }
 
 
     public bool StartGlia()
@@ -96,6 +103,26 @@ public class HPOmnicept
     ///////////////////////////////////////////////////
     // Class Constructor
     ///////////////////////////////////////////////////
+    //constructor overloading
+    public HPOmnicept(bool[] captures, string rootDir)
+    {
+        constructor(captures, rootDir + "/");
+    }
+    public HPOmnicept(bool[] captures)
+    {
+        constructor(captures, "");
+    }
+    public HPOmnicept()
+    {
+        bool[] captures = new bool[] { true, true, true, true };
+        constructor(captures, "");
+    }
+    public HPOmnicept(string rootDir)
+    {
+        bool[] captures = new bool[] { true, true, true, true };
+        constructor(captures, rootDir + "/");
+    }
+
     private void constructor(bool[] captures, string rootDir)
     {
         StartGlia();
@@ -116,54 +143,26 @@ public class HPOmnicept
         if (recordHR)
         {
             fileNameHR = dirName + "/HR_" + currTime + ".csv";
+
             // first line
-            File.WriteAllText(fileNameHR, "Time,HR\n");
+            writeCSV(fileNameHR, hrItems);
         }
         if (recordEye)
         {
             fileNameEye = dirName + "/Eye_" + currTime + ".csv";
 
             // first line
-            string[] eyeVar = { "leftGazeX", "leftGazeY"
-                    , "leftGazeY"
-                    , "leftGazeZ"
-                    , "leftGazeConfidence"
-                    , "leftPilposition"
-                    , "leftOpenness"
-                    , "leftOpennessConfidence"
-                    , "leftPupilDilation"
-                    , "leftPupilDilationConfidence"
-                    , "rightGazeX"
-                    , "rightGazeY"
-                    , "rightGazeZ"
-                    , "rightGazeConfidence"
-                    , "rightPilposition"
-                    , "rightOpenness"
-                    , "rightOpennessConfidence"
-                    , "rightPupilDilation"
-                    , "rightPupilDilationConfidence"
-                    , "combinGazeX"
-                    , "combinGazeY"
-                    , "combinGazeZ"
-                    , "combineGazeConfidence"};
-
-            File.WriteAllText(fileNameEye, "Time,");
-            for (int i = 0; i < eyeVar.Length; i++)
-            {
-                File.AppendAllText(fileNameEye, eyeVar[i] + ",");
-            }
-            File.AppendAllText(fileNameEye, "\n");
-
+            writeCSV(fileNameEye, eyeItems);
         }
         if (recordCam)
         {
             fileNameCam = dirName + "/Face_" + currTime + ".csv";
 
             // first line
-            File.WriteAllText(fileNameCam, "Time,frameNumber,fps\n");
+            writeCSV(fileNameCam, faceItems);
 
             // create dir for pics
-            dirCam = dirName + "/" + currTime + "FaceImages";
+            dirCam = dirName + "/" + "FaceImages_" + currTime;
             Directory.CreateDirectory(dirCam);
 
             // create image temp
@@ -174,27 +173,8 @@ public class HPOmnicept
             fileNameIMU = dirName + "/IMU_" + currTime + ".csv";
 
             // first line
-            File.WriteAllText(fileNameIMU, "Time,IMU#,Acc-X,Acc-Y,Acc-Z,Gyro-X,Gyro-Y,Gyro-Z\n");
+            writeCSV (fileNameIMU, imuItems);
         }
-    }
-    //constructor overloading
-    public HPOmnicept(bool[] captures, string rootDir)
-    {
-        constructor(captures, rootDir+"/");
-    }
-    public HPOmnicept(bool[] captures)
-    {
-        constructor(captures, "");
-    }
-    public HPOmnicept()
-    {
-        bool[] captures = new bool[] { true, true, true, true };
-        constructor(captures, "");
-    }
-    public HPOmnicept(string rootDir)
-    {
-        bool[] captures = new bool[] { true, true, true, true };
-        constructor(captures, rootDir + "/");
     }
     ///////////////////////////////////////////////////
 
@@ -271,13 +251,19 @@ public class HPOmnicept
 
 
     ///////////////////////////////////////////////////
-    /// write files functions
+    /// write files functions to append
     ///////////////////////////////////////////////////
     void writeCSV(string fileName, string[] values)
     {
-        string line = "";
+        // if file not exits, create file
+        if (!File.Exists(fileName))
+        {
+            File.WriteAllText(fileName, "");
+        }
+
 
         // write file
+        string line = "";
         line += values[0];
         for (int i = 1; i < values.Length; i++)
         {
@@ -361,29 +347,9 @@ public class HPOmnicept
         string combineGazeConfidence = eyeTracking.CombinedGaze.Confidence.ToString();
 
 
-        string[] eye = new string[] {currTime
-            ,leftGazeX
-            ,leftGazeY
-            ,leftGazeZ
-            ,leftGazeConfidence
-            ,leftPilposition
-            ,leftOpenness
-            ,leftOpennessConfidence
-            ,leftPupilDilation
-            ,leftPupilDilationConfidence
-            ,rightGazeX
-            ,rightGazeY
-            ,rightGazeZ
-            ,rightGazeConfidence
-            ,rightPilposition
-            ,rightOpenness
-            ,rightOpennessConfidence
-            ,rightPupilDilation
-            ,rightPupilDilationConfidence
-            ,combinGazeX
-            ,combinGazeY
-            ,combinGazeZ
-            ,combineGazeConfidence};
+        string[] eye = new string[] {currTime,leftGazeX,leftGazeY,leftGazeZ,leftGazeConfidence,leftPilposition,leftOpenness,leftOpennessConfidence,leftPupilDilation,leftPupilDilationConfidence
+            ,rightGazeX,rightGazeY,rightGazeZ,rightGazeConfidence,rightPilposition,rightOpenness,rightOpennessConfidence,rightPupilDilation,rightPupilDilationConfidence
+            ,combinGazeX,combinGazeY,combinGazeZ,combineGazeConfidence};
 
 
         // write file
@@ -412,9 +378,7 @@ public class HPOmnicept
         writeCSV(fileNameCam, face);
 
         // write png file
-        writePNG(dirCam + "/Image_" + frameNumber + "_" + currTime + ".png");
-        //byte[] faceImage = cameraImageTex2D.EncodeToPNG();
-        //File.WriteAllBytes(dirCam + "/Image_" + frameNumber + "_" + currTime + ".png", faceImage);
+        writePNG(dirCam + "/Frame_" + frameNumber + "_At_" + currTime + ".png");
 
         return face;
     }
