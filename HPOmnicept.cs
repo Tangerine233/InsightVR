@@ -129,7 +129,7 @@ public class HPOmnicept
 
         //create dir
         parentDir = rootDir;
-        currTime = DateTime.Now.ToString("yyyyMMdd_HH_mm_ss");
+        currTime = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
         dirName = parentDir + currTime + "_HP_Omincept_captures";
         Directory.CreateDirectory(dirName);
 
@@ -277,7 +277,7 @@ public class HPOmnicept
     void writePNG(string fileName)
     {
         byte[] faceImage = cameraImageTex2D.EncodeToPNG();
-        File.WriteAllBytes(fileName, faceImage);
+        File.WriteAllBytes(fileName.Replace(':','-'), faceImage);
     }
     ///////////////////////////////////////////////////
 
