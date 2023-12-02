@@ -277,7 +277,7 @@ public class HPOmnicept
     void writePNG(string fileName)
     {
         byte[] faceImage = cameraImageTex2D.EncodeToPNG();
-        File.WriteAllBytes(fileName.Replace(':','-'), faceImage);
+        File.WriteAllBytes(fileName, faceImage);
     }
     ///////////////////////////////////////////////////
 
@@ -378,7 +378,7 @@ public class HPOmnicept
         writeCSV(fileNameCam, face);
 
         // write png file
-        writePNG(dirCam + "/Frame_" + frameNumber + " At_" + currTime + ".png");
+        writePNG(dirCam + "/Frame_" + frameNumber + " At_" + currTime.Replace(':', '-') + ".png");
 
         return face;
     }
