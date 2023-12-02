@@ -378,7 +378,7 @@ public class HPOmnicept
         writeCSV(fileNameCam, face);
 
         // write png file
-        writePNG(dirCam + "/Frame_" + frameNumber + "_At_" + currTime + ".png");
+        writePNG(dirCam + "/Frame_" + frameNumber + " At_" + currTime + ".png");
 
         return face;
     }
