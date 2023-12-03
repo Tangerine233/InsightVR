@@ -2,26 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-using HP.Omnicept;
-using HP.Omnicept.Messaging;
-using HP.Omnicept.Messaging.Messages;
 using System.IO;
 
 public class InsightVR : MonoBehaviour
 {
-    [SerializeField]
-    private bool captureHR = true;
-
-    [SerializeField]
-    private bool captureEyeData = true;
-
-    [SerializeField]
-    private bool captureCameraImages = true;
-
-    [SerializeField]
-    private bool captureIMUData = true;
-    
     [SerializeField] 
     Headset thisHeadset = new Headset();
 
@@ -75,18 +59,18 @@ public class InsightVR : MonoBehaviour
                 break;
             case Headset.Meta_Quest_Pro:
                 if(customDirectory != null) {
-                    metaQuest = new MetaQuest(captures, customDirectory);
+                    //metaQuest = new MetaQuest(captures, customDirectory);
                 }
                 else {
-                    metaQuest = new MetaQuest(captures);
+                    //metaQuest = new MetaQuest(captures);
                 }
                 break;
             case Headset.HTC_Vive:
             if(customDirectory != null) {
-                    htcVive = new htcVive(captures, customDirectory);
+                    //htcVive = new htcVive(captures, customDirectory);
                 }
                 else {
-                    htcVive = new htcVive(captures);
+                    //htcVive = new htcVive(captures);
                 }
                 break;
             default:
