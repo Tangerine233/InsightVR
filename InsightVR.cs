@@ -6,6 +6,14 @@ using System.IO;
 
 public class InsightVR : MonoBehaviour
 {
+    [SerializeField]
+    private bool captureHR = true;
+    [SerializeField]
+    private bool captureEyeData = true;
+    [SerializeField]
+    private bool captureCameraImages = true;
+    [SerializeField]
+    private bool captureIMUData = true;
     [SerializeField] 
     Headset thisHeadset = new Headset();
 
@@ -44,9 +52,10 @@ public class InsightVR : MonoBehaviour
         }
 
         captures = new bool[4];
-        for(int i = 0; i < captures.Length; i++) {
-            captures[i] = true;
-        }
+        captures[0] = captureHR;
+        captures[1] = captureEyeData;
+        captures[2] = captureCameraImages;
+        captures[3] = captureIMUData;
 
         switch(thisHeadset) {
             case Headset.HP_Omnicept_Reverb_G2:
