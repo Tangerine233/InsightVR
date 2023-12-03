@@ -28,6 +28,9 @@ public class InsightVR : MonoBehaviour
     [SerializeField]
     public bool[] captures;
 
+    [SerializeField] 
+    public string customDirectory = null;
+
     public Material cameraImageMat;
     private Texture2D cameraImageTex2D;
 
@@ -63,13 +66,28 @@ public class InsightVR : MonoBehaviour
 
         switch(thisHeadset) {
             case Headset.HP_Omnicept_Reverb_G2:
-                hPOmniceptObject = new HPOmnicept(captures);
+                if(customDirectory != null) {
+                    hPOmniceptObject = new HPOmnicept(captures, customDirectory);
+                }
+                else {
+                    hPOmniceptObject = new HPOmnicept(captures);
+                }
                 break;
             case Headset.Meta_Quest_Pro:
-                //metaQuest = new MetaQuest(captures);
+                if(customDirectory != null) {
+                    metaQuest = new MetaQuest(captures, customDirectory);
+                }
+                else {
+                    metaQuest = new MetaQuest(captures);
+                }
                 break;
             case Headset.HTC_Vive:
-                //htcVive = new HTCVive(captures);
+            if(customDirectory != null) {
+                    htcVive = new htcVive(captures, customDirectory);
+                }
+                else {
+                    htcVive = new htcVive(captures);
+                }
                 break;
             default:
                 break;
