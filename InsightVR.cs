@@ -17,14 +17,14 @@ public class InsightVR : MonoBehaviour
     [SerializeField] 
     Headset thisHeadset = new Headset();
 
-    [SerializeField]
-    public bool[] captures;
+    //[SerializeField]
+    //public bool[] captures;
 
     [SerializeField] 
     public string customDirectory = null;
 
-    public Material cameraImageMat;
-    private Texture2D cameraImageTex2D;
+    //public Material cameraImageMat;
+    //private Texture2D cameraImageTex2D;
 
     HPOmnicept hPOmniceptObject;
     
@@ -45,13 +45,13 @@ public class InsightVR : MonoBehaviour
     //files, what sensors to capture, and which device is being used
     public void Start()
     {
-        cameraImageTex2D = new Texture2D(400, 400, TextureFormat.R8, false);
-        if (cameraImageMat != null)
-        {
-            cameraImageMat.mainTexture = cameraImageTex2D;
-        }
+        //cameraImageTex2D = new Texture2D(400, 400, TextureFormat.R8, false);
+        //if (cameraImageMat != null)
+        //{
+        //    cameraImageMat.mainTexture = cameraImageTex2D;
+        //}
 
-        captures = new bool[4];
+        bool[] captures = new bool[4];
         captures[0] = captureHR;
         captures[1] = captureEyeData;
         captures[2] = captureCameraImages;
@@ -106,7 +106,7 @@ public class InsightVR : MonoBehaviour
 
     public void OnDestroy()
     {
-        Destroy(cameraImageTex2D);
+        //Destroy(cameraImageTex2D);
     }
 
     public void DisconnectHandler(string msg)
