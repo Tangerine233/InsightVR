@@ -5,7 +5,7 @@ This program is a script for unity3d to create the pipelines to help gather eyes
 
 # Supported VR Headset:
 1. HP Reverb G2 Omnicept Edition
-... 
+2. ... 
 
 # Required:
 - Unity3D
