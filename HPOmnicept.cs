@@ -274,9 +274,8 @@ public class HPOmnicept
         File.AppendAllText(fileName, line);
     }
 
-    void writePNG(string fileName)
+    void writePNG(string fileName, byte[] faceImage)
     {
-        byte[] faceImage = cameraImageTex2D.EncodeToPNG();
         File.WriteAllBytes(fileName, faceImage);
     }
     ///////////////////////////////////////////////////
@@ -358,7 +357,7 @@ public class HPOmnicept
         return eye;
     }
 
-    string[] FaceCamMessage(ITransportMessage msg)
+    byte[] FaceCamMessage(ITransportMessage msg)
     {
         var cameraImage = m_gliaClient.Connection.Build<CameraImage>(msg);
         currTime = updateCurrTime(cameraImage.Timestamp.SystemTimeMicroSeconds);
@@ -374,13 +373,14 @@ public class HPOmnicept
         string[] face = new string[] { currTime, frameNumber, fPS };
 
 
-        // write csv file
+        // write csv file on time, frameNumber, and FPS
         writeCSV(fileNameCam, face);
 
         // write png file
-        writePNG(dirCam + "/Frame_" + frameNumber + " At_" + currTime.Replace(':', '-') + ".png");
+        byte[] faceImage = cameraImageTex2D.EncodeToPNG();
+        File.WriteAllBytes(dirCam + "/Frame_" + frameNumber + " At_" + currTime.Replace(':', '-') + ".png", faceImage);
 
-        return face;
+        return faceImage;
     }
 
     string[,] ImuMessage(ITransportMessage msg)
