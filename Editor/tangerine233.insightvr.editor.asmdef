@@ -1,11 +1,10 @@
 {
-    "name": "com.tangerine233.insightvr.editor",
+    "name": "insightvr.editor",
     "rootNamespace": "",
-    "references": [],
-    "includePlatforms": [
-        "WindowsStandalone32",
-        "WindowsStandalone64"
+    "references": [
+        "GUID:2887a9b500f5129478f4428f59b566d0"
     ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
