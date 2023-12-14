@@ -378,7 +378,7 @@ public class HPOmnicept
 
         // write png file
         byte[] faceImage = cameraImageTex2D.EncodeToPNG();
-        File.WriteAllBytes(dirCam + "/Frame_" + frameNumber + " At_" + currTime.Replace(':', '-') + ".png", faceImage);
+        writePNG(dirCam + "/Frame_" + frameNumber + " At_" + currTime.Replace(':', '-') + ".png", faceImage);
 
         return faceImage;
     }

@@ -7,15 +7,15 @@ using System.IO;
 public class InsightVR : MonoBehaviour
 {
     [SerializeField]
-    private bool captureHR = true;
+    public bool captureHR = true;
     [SerializeField]
-    private bool captureEyeData = true;
+    public bool captureEyeData = true;
     [SerializeField]
-    private bool captureCameraImages = true;
+    public bool captureCameraImages = true;
     [SerializeField]
-    private bool captureIMUData = true;
+    public bool captureIMUData = true;
     [SerializeField] 
-    Headset thisHeadset = new Headset();
+    public Headset thisHeadset = new Headset();
 
     //[SerializeField]
     //public bool[] captures;
@@ -32,7 +32,7 @@ public class InsightVR : MonoBehaviour
     //MetaQuest metaQuest; 
     //HTCVive htcVive;
 
-    enum Headset {
+    public enum Headset {
         HP_Omnicept_Reverb_G2,
         Meta_Quest_Pro,
         HTC_Vive
