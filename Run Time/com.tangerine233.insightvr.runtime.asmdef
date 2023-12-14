@@ -1,0 +1,17 @@
+{
+    "name": "com.tangerine233.insightvr.editor",
+    "rootNamespace": "",
+    "references": [],
+    "includePlatforms": [
+        "WindowsStandalone32",
+        "WindowsStandalone64"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
