@@ -1,0 +1,21 @@
+{
+  "name": "com.tangerine233.insightvr",
+  "version": "0.0.1",
+  "displayName": "InsightVR",
+  "description": "InsightVR creats a pipeline and will captures the heart rates, eye tracking, face tracking, and IMU data from selected VR headset",
+  "documentationUrl": "https://github.com/Tangerine233/InsightVR",
+  "keywords": [
+    "VR",
+    "heart rate",
+    "eye tracking",
+    "face tracking",
+    "IMU",
+    "HP Omnicpet"
+  ],
+  "author": {
+    "name": "Kai He",
+    "email": "he734215241@gmail.com",
+    "url": "https://github.com/Tangerine233"
+  },
+  "type": "tool"
+}
