@@ -85,6 +85,8 @@ public class InsightVR : MonoBehaviour
             default:
                 break;
         }
+
+        Debug.Log($"[InsightVR][{thisHeadset}] Capture Started");
     }
 
     //calls update method in each class to write to csv file
@@ -107,6 +109,22 @@ public class InsightVR : MonoBehaviour
     public void OnDestroy()
     {
         //Destroy(cameraImageTex2D);
+        switch (thisHeadset)
+        {
+            case Headset.HP_Omnicept_Reverb_G2:
+                hPOmniceptObject.OnDestroy();
+                break;
+            case Headset.Meta_Quest_Pro:
+                //metaQuest.Update();
+                break;
+            case Headset.HTC_Vive:
+                //htcVive.Update();
+                break;
+            default:
+                break;
+        }
+
+        Debug.Log($"[InsightVR][{thisHeadset}] Capture Ends");
     }
 
     public void DisconnectHandler(string msg)

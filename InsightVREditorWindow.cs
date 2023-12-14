@@ -22,6 +22,7 @@ public class InsightVREditorWindow : EditorWindow
     private void OnGUI()
     {
 
+        GUILayout.Label("Enable InsightVR", EditorStyles.boldLabel);
         EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
         enableCapture = EditorGUILayout.Toggle("Enable Captures", enableCapture);
         EditorGUI.EndDisabledGroup();
@@ -47,21 +48,35 @@ public class InsightVREditorWindow : EditorWindow
         customDirectory = EditorGUILayout.TextField(customDirectory);
         EditorGUI.EndDisabledGroup();
     }
+    private void OnEnable()
+    {
+        enableCapture = false;
+        started = false;
+}
 
+    private void OnDisable()
+    {
+        enableCapture = false;
+        started = false;
+    }
 
     public void Update() {
-        if (EditorApplication.isPlaying)
+
+        if (EditorApplication.isPlaying && enableCapture)
         {
-            if (!started) { 
+            if (!started)
+            {
                 started = true;
                 StartCapture();
             }
 
-            Debug.Log("Update1111");
             insightVR.Update();
-            Debug.Log("Update2222");
         }
-        else started = false;
+        else if (started)
+        {
+            insightVR.OnDestroy();
+            started = false;
+        }
     }
     
     private void StartCapture()

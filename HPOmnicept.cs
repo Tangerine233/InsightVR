@@ -86,12 +86,12 @@ public class HPOmnicept
             m_gliaClient.setSubscriptions(m_subList);
             m_isConnected = true;
 
-            Debug.Log("[InsightVR_Omnicept] Connected To Omnicept Runtime");
+            Debug.Log("[InsightVR][Onnicept] Connected To Omnicept Runtime");
         }
         catch (Exception e)
         {
             m_isConnected = false;
-            Debug.Log("[InsightVR_Omnicept] Failed to load Glia for reason :" + e);
+            Debug.Log("[InsightVR][Onnicept] Failed to load Glia for reason :" + e);
         }
         return m_isConnected;
     }
@@ -209,7 +209,7 @@ public class HPOmnicept
             }
             catch (HP.Omnicept.Errors.TransportError e)
             {
-                Debug.Log("[InsightVR_OmniceptModule] Failed to start Glia! :" + e);
+                Debug.Log("[InsightVR][Onnicept] Failed to start Glia! :" + e);
             }
         }
         return msg;
@@ -416,4 +416,18 @@ public class HPOmnicept
         return imu;
     }
     ///////////////////////////////////////////////////
+ 
+
+
+    public void OnDestroy()
+    {
+        m_gliaValCache?.Stop();
+        m_gliaClient?.Dispose();
+
+        m_gliaValCache = null;
+        m_gliaClient = null;
+
+        Glia.cleanupNetMQConfig(true);
+    }
+
 }
